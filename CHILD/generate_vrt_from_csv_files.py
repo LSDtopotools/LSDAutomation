@@ -22,9 +22,11 @@ DataDirectory =  "/exports/csce/datastore/geos/users/s0923330/CHILD/CHILD_Fiona/
 print DataDirectory
 #subprocess.call(['ls',DataDirectory,'-l'])
 
+uprate='Up030'
+
 
 # assigns a number to each iteration (i.e. for every .csv file in the directory)
-for FileName in glob(DataDirectory+"*.csv"): 
+for FileName in glob(DataDirectory+"*"+uprate+"*.csv"): 
 
     print "filename is: " + FileName
     
