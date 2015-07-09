@@ -13,7 +13,7 @@ import os
 def ReformatSeperators(path):
     
     path = RemoveEscapeCharacters(path)
-    print "Path is: " + path    
+    #print "Path is: " + path    
     
     # loook for the various seperators in the string
     if "\\" in path:
@@ -67,6 +67,20 @@ def GetFilePrefix(filename):
     
     fileprefix = splitfname[0]
     return fileprefix
+
+# This gets the path of a filename (with a full directory path)
+def GetPath(filename):
+    newfilename = ReformatSeperators(filename)
+    
+    splitname = newfilename.split(os.sep)
+    n_levels = len(splitname)   
+    newpath = ""   
+    for s in range (0,n_levels-1):
+        newpath = newpath+splitname[s]+os.sep
+        
+    return newpath
+    
+
 
 # This is necessary because of stupid windows seperators    
 def RemoveEscapeCharacters(line):
