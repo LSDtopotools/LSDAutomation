@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 09 11:16:42 2015
+
+@author: smudd
+"""
+
+
+import os
+
+# This function takes a string and looks for the seperators
+# it then reformats to the correct operating system
+def ReformatSeperators(path):
+    
+    path = RemoveEscapeCharacters(path)
+    print "Path is: " + path    
+    
+    # loook for the various seperators in the string
+    if "\\" in path:
+        #print "I found \\"
+        path = RemoveEscapeCharacters(path)
+        splitpath = path.split("\\")
+    elif "/" in path:
+        #print "I found ''/''"
+        if "//" in path:
+            #print "I found ''//''"
+            splitpath = path.split("//")
+            
+        else:
+            splitpath = path.split("/")
+    else:
+        print "I did not find a valid seperator"
+        splitpath = "NULL"
+
+    # Now reconstitute the path using the operating system seperator
+    # get the size of the split path
+    n_spaces = len(splitpath)   
+    newpath = ""   
+    for s in range (0,n_spaces-1):
+       newpath = newpath+splitpath[s]+os.sep 
+    # now the last element
+    newpath = newpath+splitpath[n_spaces-1]
+    
+    #print "HEY, FOLKS, the new path is: " + newpath
+            
+    return newpath
+    
+    
+
+# This function takes a path with any seperators and converts the seperators
+# to the current operating system and adds a seperator at the end of the
+# path                    
+def AppendSepToDirectoryPath(path):
+    newpath = ReformatSeperators(path)
+    newpath = newpath+os.sep
+    return newpath
+
+# This function takes a filename (that could include a full directory path)
+# and lops off the path as well as the extension
+def GetFilePrefix(filename):
+    newfilename = ReformatSeperators(filename)
+    
+    # split the file
+    splitname = newfilename.split(os.sep)
+    fname = splitname[-1]
+    splitfname = fname.split(".")
+    
+    fileprefix = splitfname[0]
+    return fileprefix
+
+# This is necessary because of stupid windows seperators    
+def RemoveEscapeCharacters(line):
+    line = line.rstrip().replace('\\n', '\n')
+    line = line.rstrip().replace('\\b', '\b') 
+    line = line.rstrip().replace('\\r', '\r')  
+    line = line.rstrip().replace('\\t', '\t')  
+    line = line.rstrip().replace('\\n', '\n')  
+    line = line.rstrip().replace('\\f', '\f')  
+    line = line.rstrip().replace('\\v', '\v') 
+    
+    # this last one deals with the infuriating special case of \b
+    line = line.rstrip().replace('\x08', '\\b')     
+    return line
+    
+            
+    
