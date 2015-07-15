@@ -75,6 +75,6 @@ def GetListOfRasters(path,prefix):
     return DEM_names
      
 if __name__ == "__main__":
-    path = "c:\basin_data\Chile\CRN_data_analysis"
-    prefix = "Chile_data_analysis"
+    path = "c:\basin_data\Chile\TestCRN"
+    prefix = "CRN_chile"
     PrepareDirectoriesForBasinSpawn(path,prefix)   

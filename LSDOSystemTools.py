@@ -43,16 +43,22 @@ def ReformatSeperators(path):
     
     #print "HEY, FOLKS, the new path is: " + newpath
             
-    return newpath
-    
-    
+    return newpath    
 
 # This function takes a path with any seperators and converts the seperators
 # to the current operating system and adds a seperator at the end of the
 # path                    
 def AppendSepToDirectoryPath(path):
+    
+    #first check to see if there are escape characters
+    RemoveEscapeCharacters(path)    
+    
+    # now reformat the seperators
     newpath = ReformatSeperators(path)
-    newpath = newpath+os.sep
+    
+    # now check to see if the last character is a sep
+    if newpath[-1] != os.sep:
+        newpath = newpath+os.sep
     return newpath
 
 # This function takes a filename (that could include a full directory path)

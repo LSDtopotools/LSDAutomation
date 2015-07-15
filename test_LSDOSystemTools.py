@@ -36,6 +36,11 @@ def TestOSTools():
     print "New path: " + newpath4
 
     # test the directory adder
+    # test the directory adder
+    print "\n\n"
+    newpath = LSDost.AppendSepToDirectoryPath(path1)  
+    print "Sep appended path is: " + newpath    
+    
     print "\n\n"
     newpath = LSDost.AppendSepToDirectoryPath(path3)  
     print "Sep appended path is: " + newpath
