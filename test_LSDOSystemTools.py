@@ -48,7 +48,14 @@ def TestOSTools():
     # Test the file prefix grabber
     fprefix = LSDost.GetFilePrefix(path4)
     print "\n\n"
-    print "File prefix is: "+ fprefix    
+    print "File prefix is: "+ fprefix 
+    
+    
+    # Test the remove path level
+    print "\n\n"
+    print "Removing a directory level from: " + newpath
+    newnewpath = LSDost.RemoveDirectoryLevel(newpath)
+    print "The new directory is: " + newnewpath 
     
 if __name__ == "__main__":
     TestOSTools()     

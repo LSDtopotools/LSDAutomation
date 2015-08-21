@@ -37,13 +37,14 @@ def ReformatSeperators(path):
     n_spaces = len(splitpath)   
     newpath = ""   
     for s in range (0,n_spaces-1):
-       newpath = newpath+splitpath[s]+os.sep 
+        newpath = newpath+splitpath[s]+os.sep 
+            
     # now the last element
     newpath = newpath+splitpath[n_spaces-1]
     
-    #print "HEY, FOLKS, the new path is: " + newpath
-            
-    return newpath    
+    newpath2 = RemoveEscapeCharacters(newpath)
+    
+    return newpath2    
 
 # This function takes a path with any seperators and converts the seperators
 # to the current operating system and adds a seperator at the end of the
@@ -85,18 +86,36 @@ def GetPath(filename):
         newpath = newpath+splitname[s]+os.sep
         
     return newpath
+
+    
+# This removes one level from the directory    
+def RemoveDirectoryLevel(path):
+    # Make sure the formatting is appropriate and there is a seperator at the end
+    newpathname = ReformatSeperators(path)
+    pathname = AppendSepToDirectoryPath(newpathname)
+    
+    # now split the path
+    splitpath = pathname.split(os.sep)
+    
+    # now remove the final path level
+    n_spaces = len(splitpath)   
+    newpath = "" 
+    for s in range (0,n_spaces-2):
+        newpath = newpath+splitpath[s]+os.sep
+        
+    return newpath
     
 
 
 # This is necessary because of stupid windows seperators    
 def RemoveEscapeCharacters(line):
-    line = line.rstrip().replace('\\n', '\n')
-    line = line.rstrip().replace('\\b', '\b') 
-    line = line.rstrip().replace('\\r', '\r')  
-    line = line.rstrip().replace('\\t', '\t')  
-    line = line.rstrip().replace('\\n', '\n')  
-    line = line.rstrip().replace('\\f', '\f')  
-    line = line.rstrip().replace('\\v', '\v') 
+    line = line.rstrip().replace('\n', '\\n')
+    line = line.rstrip().replace('\b', '\\b') 
+    line = line.rstrip().replace('\r', '\\r')  
+    line = line.rstrip().replace('\t', '\\t')  
+    line = line.rstrip().replace('\n', '\\n')  
+    line = line.rstrip().replace('\f', '\\f')  
+    line = line.rstrip().replace('\v', '\\v') 
     
     # this last one deals with the infuriating special case of \b
     line = line.rstrip().replace('\x08', '\\b')     
