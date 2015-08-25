@@ -75,6 +75,16 @@ def GetFilePrefix(filename):
     fileprefix = splitfname[0]
     return fileprefix
 
+# This gets the filename without the path
+def GetFileNameNoPath(filename):
+    newfilename = ReformatSeperators(filename)
+    
+    # split the file
+    splitname = newfilename.split(os.sep)
+    fname = splitname[-1]
+    return fname
+
+
 # This gets the last directory level
 # say if the path is home\yo\ma\
 # then this function returns ma
