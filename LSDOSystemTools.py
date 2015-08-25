@@ -75,6 +75,23 @@ def GetFilePrefix(filename):
     fileprefix = splitfname[0]
     return fileprefix
 
+# This gets the last directory level
+# say if the path is home\yo\ma\
+# then this function returns ma
+def GetLastDirectoryLevel(path):
+    newpathname = ReformatSeperators(path)
+    pathname = AppendSepToDirectoryPath(newpathname)
+    
+    # now split the path
+    splitpath = pathname.split(os.sep)
+    
+    # now remove the final path level
+    n_spaces = len(splitpath)   
+    newpath = splitpath[n_spaces-2] 
+
+    return newpath
+        
+        
 # This gets the path of a filename (with a full directory path)
 def GetPath(filename):
     newfilename = ReformatSeperators(filename)
@@ -87,6 +104,14 @@ def GetPath(filename):
         
     return newpath
 
+# This function finds the level of the path
+def GetPathLevel(path):
+    newpathname = ReformatSeperators(path)
+    pathname = AppendSepToDirectoryPath(newpathname)
+    splitname = pathname.split(os.sep)
+    n_levels = len(splitname)  
+    return n_levels
+    
     
 # This removes one level from the directory    
 def RemoveDirectoryLevel(path):

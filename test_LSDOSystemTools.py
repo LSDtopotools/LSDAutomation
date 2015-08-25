@@ -55,7 +55,13 @@ def TestOSTools():
     print "\n\n"
     print "Removing a directory level from: " + newpath
     newnewpath = LSDost.RemoveDirectoryLevel(newpath)
-    print "The new directory is: " + newnewpath 
+    print "The new directory is: " + newnewpath
+    
+    # Test the last directory name function
+    print "\n\n"
+    print "The last directory name in: " + newnewpath
+    name = LSDost.GetLastDirectoryLevel(newnewpath)
+    print "is: " + name    
     
 if __name__ == "__main__":
     TestOSTools()     
