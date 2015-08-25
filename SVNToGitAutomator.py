@@ -22,7 +22,7 @@ from glob import glob
 import LSDOSystemTools as LSDost
 import os
 
-def SVNToGitAutomator(DataDirectory):
+def GetRequiredFilesFromFolder(DataDirectory):
     
     #print "Current directory is: " + os.getcwd()   
     
@@ -116,6 +116,68 @@ def SVNToGitAutomator(DataDirectory):
     #print "====================================="
     
     return required_files_noduplicates
+
+def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory):
+    # Make sure directories have slashes at the end
+    Od = LSDost.ReformatSeperators(ObjectsDirectory)   
+    ObjectsDirectory = LSDost.AppendSepToDirectoryPath(Od)
+    Dd = ObjectsDirectory+DriverDirectory
+    DriverDirectory = LSDost.AppendSepToDirectoryPath(Dd)
+    
+    Td = LSDost.ReformatSeperators(TargetDirectory)   
+    TargetDirectory = LSDost.AppendSepToDirectoryPath(Td)    
+    
+    # Check if the directories exist
+    if not os.access(ObjectsDirectory,os.F_OK):
+        print "The object directory for the code doesn't exist!"
+        print "You wanted this directory: " + ObjectsDirectory
+        return 0
+    if not os.access(ObjectsDirectory,os.F_OK):
+        print "The driver directory for the code doesn't exist!"
+        print "You wanted this directory: " + DriverDirectory
+        return 0        
+    if not os.access(ObjectsDirectory+"TNT"+os.sep,os.F_OK):
+        print "The TNT directory for the code doesn't exist!"
+        print "You wanted this directory: " + ObjectsDirectory+"TNT"+os.sep
+        return 0 
+        
+    if not os.access(TargetDirectory,os.F_OK):
+        print "The target directory for the code doesn't exist!"
+        print "You wanted this directory: " + TargetDirectory
+        print "I am making that now"
+        #os.mkdir(TargetDirectory)
+         
+
+    # Now get the required files
+    print "================================="
+    print "I am getting the files from all the .make files in this directory:"
+    print DriverDirectory
+    required_files_noduplicates = GetRequiredFilesFromFolder(DriverDirectory) 
+    print "The files are: "
+    print required_files_noduplicates
+
+    # loop through these files, collecting the filenames and directory names
+    # first you need to know what directory level the driver files are in
+    print "\n\n\n======================================"
+    n_level_of_driver_directory = LSDost.GetPathLevel(DriverDirectory)
+    for FileName in required_files_noduplicates:
+        # you need to know what level the file is
+        ThisPath = LSDost.GetPath(FileName)
+        ThisLevel = LSDost.GetPathLevel(ThisPath)
+        
+        #if it is the same level as the driver directory, it is in the driver directory!
+        if ThisLevel == n_level_of_driver_directory:        
+            CopyDirectory = TargetDirectory+DriverDirectory+os.sep
+            CopyFileName = LSDost.GetFileNameNoPath(FileName)
+            CopyFileNameWithPath = CopyDirectory+CopyFileName
+        else:
+            CopyDirectory = TargetDirectory
+            CopyFileName = LSDost.GetFileNameNoPath(FileName)
+            CopyFileNameWithPath = CopyDirectory+CopyFileName            
+            
+        print "The filename is: " + FileName
+        print "The copy filename is: " + CopyFileNameWithPath   
+    print "=============================================="             
                     
 
 
@@ -123,11 +185,16 @@ if __name__ == "__main__":
     # YOU NEED TO MODIFY THIS DIRECTORY
     
     # THis one is for running in windows
-    DataDirectory =  'T:\devel_projects\LSDTopoTools\trunk\driver_functions_MuddChi2014'
-    # THis one is for running directly in linux
+    ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
+    DriverDirectory = 'driver_functions_MuddChi2014'
+    TargetDirectory = 'T:\Git_projects\LSDTopoTools_ChiMudd2014'
     
-    #DataDirectory =  '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk/driver_functions_MuddChi2014'    
+    CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
     
-    required_files_noduplicates = SVNToGitAutomator(DataDirectory)   
     
-    print required_files_noduplicates
+    #DataDirectory =  'T:\devel_projects\LSDTopoTools\trunk\driver_functions_MuddChi2014'
+    # THis one is for running directly in linux    
+    #DataDirectory =  '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk/driver_functions_MuddChi2014'        
+    #required_files_noduplicates = GetRequiredFilesFromFolder(DataDirectory)   
+    
+    #print required_files_noduplicates
