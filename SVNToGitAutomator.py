@@ -21,6 +21,7 @@ import numpy as np
 from glob import glob
 import LSDOSystemTools as LSDost
 import os
+import shutil
 
 def GetRequiredFilesFromFolder(DataDirectory):
     
@@ -46,6 +47,9 @@ def GetRequiredFilesFromFolder(DataDirectory):
         
         # Initiate an empty list that will contain the filenames
         cppfiles = []
+        
+        # add the makefile to the files to be copied
+        required_files.append(FileName)
         
         # loop through the lines, flag a start where SOURCES line starts
         start_flag = 0
@@ -117,17 +121,22 @@ def GetRequiredFilesFromFolder(DataDirectory):
     
     return required_files_noduplicates
 
-def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory):
-    # Make sure directories have slashes at the end
+# This function checks the file structures and either makes directories or
+# throws errors when fiel structures do not exist
+def CheckFileStructuresForCopy(ObjectsDirectory,DriverDirectory,TargetDirectory):
+    # Format the target directories
+    Td = LSDost.ReformatSeperators(TargetDirectory)   
+    TargetDirectory = LSDost.AppendSepToDirectoryPath(Td)  
+    TDd = TargetDirectory + DriverDirectory
+    TargetDriverDirectory = LSDost.AppendSepToDirectoryPath(TDd)
+
+    # Format the source directories
     Od = LSDost.ReformatSeperators(ObjectsDirectory)   
     ObjectsDirectory = LSDost.AppendSepToDirectoryPath(Od)
     Dd = ObjectsDirectory+DriverDirectory
     DriverDirectory = LSDost.AppendSepToDirectoryPath(Dd)
-    
-    Td = LSDost.ReformatSeperators(TargetDirectory)   
-    TargetDirectory = LSDost.AppendSepToDirectoryPath(Td)    
-    
-    # Check if the directories exist
+            
+    # Check if the source directories exist
     if not os.access(ObjectsDirectory,os.F_OK):
         print "The object directory for the code doesn't exist!"
         print "You wanted this directory: " + ObjectsDirectory
@@ -140,21 +149,61 @@ def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDire
         print "The TNT directory for the code doesn't exist!"
         print "You wanted this directory: " + ObjectsDirectory+"TNT"+os.sep
         return 0 
-        
+     
+    # check if the target object directory exists
     if not os.access(TargetDirectory,os.F_OK):
         print "The target directory for the code doesn't exist!"
         print "You wanted this directory: " + TargetDirectory
+        print "I am making that now, along with the driver directory"
+        os.mkdir(TargetDirectory)
+        if not os.access(TargetDirectory,os.F_OK):
+            print "WTF the directory was not made??!"
+        os.mkdir(TargetDriverDirectory)
+        
+    # check just the driver directory
+    if not os.access(TargetDriverDirectory,os.F_OK):
+        print "The target driver directory for the code doesn't exist!"
+        print "You wanted this directory: " + TargetDriverDirectory
         print "I am making that now"
-        #os.mkdir(TargetDirectory)
-         
+        os.mkdir(TargetDriverDirectory)    
+        
+    # Check if the TNT directory exists. If it does, remove and replace it
+    # If it doesn't , just copy it across
+    TNTTargetDirectory = TargetDirectory+'TNT'+os.sep
+    TNTSourceDirectory = ObjectsDirectory+'TNT'+os.sep
+    if not os.access(TNTTargetDirectory,os.F_OK):
+        print "The target TNT directory for the code doesn't exist!"
+        print "You wanted this directory: " + TargetDriverDirectory
+        print "I am making that now"
+        shutil.copytree(TNTSourceDirectory,TNTTargetDirectory)
+    else:
+        print "There is a TNT directory here already. Removing and replacing"
+        shutil.rmtree(TNTTargetDirectory)
+        shutil.copytree(TNTSourceDirectory,TNTTargetDirectory)
 
+    print "========================="
+    print "DriverDirectory: " + DriverDirectory 
+    print "ObjectsDirectory: " + ObjectsDirectory
+    print "TargetDirectory: " + TargetDirectory
+    print "TargetDriverDirectory: " + TargetDriverDirectory
+    print "========================="
+        
+    return ObjectsDirectory,DriverDirectory,TargetDirectory,TargetDriverDirectory 
+    
+
+# This function is for copying a group of files from the makefile in a driver directory
+def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory):
+
+    # Ensure the directories exist
+    ObjectsDirectory,DriverDirectory,TargetDirectory,TargetDriverDirectory = CheckFileStructuresForCopy(ObjectsDirectory,DriverDirectory,TargetDirectory)
+             
     # Now get the required files
-    print "================================="
-    print "I am getting the files from all the .make files in this directory:"
-    print DriverDirectory
+    print "\n\n\n================================="
     required_files_noduplicates = GetRequiredFilesFromFolder(DriverDirectory) 
-    print "The files are: "
+    print "The required files are: "
     print required_files_noduplicates
+    print "================================="
+
 
     # loop through these files, collecting the filenames and directory names
     # first you need to know what directory level the driver files are in
@@ -167,7 +216,7 @@ def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDire
         
         #if it is the same level as the driver directory, it is in the driver directory!
         if ThisLevel == n_level_of_driver_directory:        
-            CopyDirectory = TargetDirectory+DriverDirectory+os.sep
+            CopyDirectory = TargetDriverDirectory
             CopyFileName = LSDost.GetFileNameNoPath(FileName)
             CopyFileNameWithPath = CopyDirectory+CopyFileName
         else:
@@ -176,7 +225,12 @@ def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDire
             CopyFileNameWithPath = CopyDirectory+CopyFileName            
             
         print "The filename is: " + FileName
-        print "The copy filename is: " + CopyFileNameWithPath   
+        print "The copy filename is: " + CopyFileNameWithPath
+        shutil.copy(FileName, CopyFileNameWithPath)
+        
+        # now copy the files over
+        
+        
     print "=============================================="             
                     
 
@@ -188,6 +242,12 @@ if __name__ == "__main__":
     ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
     DriverDirectory = 'driver_functions_MuddChi2014'
     TargetDirectory = 'T:\Git_projects\LSDTopoTools_ChiMudd2014'
+    
+    # This one is for running directly in linux
+    #ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
+    #DriverDirectory = 'driver_functions_MuddChi2014'
+    #TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMudd2014'   
+    
     
     CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
     
