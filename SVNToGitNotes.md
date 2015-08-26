@@ -70,3 +70,9 @@ Then `git add *`. It is important you do this before you compile or else all the
 Next go to github and make a new repository. 
 
 Then go back to the `TargetDirectroy` folder and add an `origin` path using git. 
+
+For example:
+
+```git remote add origin https://github.com/LSDtopotools/LSDTopoTools_ChiMudd2014.git
+
+git push -u origin master```
