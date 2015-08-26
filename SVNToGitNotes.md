@@ -26,7 +26,7 @@ The idea is that if you distribute a DEM and the code to another person, that pe
 
 
 Copying files using SVNToGitAutomator.py
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------------
 
 The `.make` files in the driver function folders contain all the informations about files needed to compile, so these are used by a python script to copy files from subversioned folders into a git folder. 
 
@@ -55,7 +55,7 @@ Once the script runs, you should have all the files needed to compile the code i
 
 
 Adding to the git repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------------
 
 If the copied folder is not a git repo, you need to do the following:
 
