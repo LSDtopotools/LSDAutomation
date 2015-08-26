@@ -234,6 +234,30 @@ def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDire
     print "=============================================="             
                     
 
+def TestMake(Path,Makefile):
+    """
+    Make the file Makefile stored in Path and return True if the returncode is
+    0 (Success). If the returncode is 2 (Failure) or any other value (wierd behaviour) 
+    return False.
+    
+    Gives no feedback on why the make failed. Not tested on Windows.
+    
+    SWDG 26/8/15
+    """
+    
+    from subprocess import Popen, PIPE    
+    
+    cmd = 'cd '+Path + '; make -f '+Makefile
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)    
+    #subprocess.call(cmd, shell=True)
+    p.communicate()[0]
+    returncode = p.returncode 
+    
+    if returncode == 0:
+        return True
+    else:
+        return False
+    
 
 if __name__ == "__main__":
     # YOU NEED TO MODIFY THIS DIRECTORY
