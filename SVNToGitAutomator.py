@@ -263,14 +263,14 @@ if __name__ == "__main__":
     # YOU NEED TO MODIFY THIS DIRECTORY
     
     # THis one is for running in windows
-    ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
-    DriverDirectory = 'driver_functions_MuddChi2014'
-    TargetDirectory = 'T:\Git_projects\LSDTopoTools_ChiMudd2014'
+    #ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
+    #DriverDirectory = 'Analysis_driver'
+    #TargetDirectory = 'T:\Git_projects\LSDTopoTools_AnalysisDriver'
     
     # This one is for running directly in linux
-    #ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
-    #DriverDirectory = 'driver_functions_MuddChi2014'
-    #TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMudd2014'   
+    ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
+    DriverDirectory = 'driver_functions_CRNTools'
+    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_CRNBasinwide'   
     
     
     CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
