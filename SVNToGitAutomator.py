@@ -269,8 +269,8 @@ if __name__ == "__main__":
     
     # This one is for running directly in linux
     ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
-    DriverDirectory = 'driver_functions_CRNTools'
-    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_CRNBasinwide'   
+    DriverDirectory = 'driver_functions_ChiMap'
+    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMap'   
     
     
     CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
