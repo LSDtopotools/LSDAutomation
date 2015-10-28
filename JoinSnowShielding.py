@@ -31,6 +31,23 @@ def GetSnowShieldingFromRaster(path, prefix):
     # now spawn the folders
     UpdateRasterWithShielding(path, prefix,Sample_names,SnowShield_values)
 
+# sample names can't have an underscore so get rid of it    
+def RemoveUnderscoreFromSampleNames(Sample_names):
+    
+    new_sample_names = []
+    for name in Sample_names:
+        namelist = name.split("_")
+        this_new_name = ""
+        for item in namelist:
+            this_new_name = this_new_name+item
+        new_sample_names.append(this_new_name)
+        
+        print "Old name was: "+name+" and new name is: "+ new_sample_names[-1]
+    
+    return new_sample_names
+        
+    
+
 # This updates the raster file with an effective shielding
 def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
     
@@ -143,6 +160,6 @@ def GetListOfRasters(path,prefix):
     return DEM_names
      
 if __name__ == "__main__":
-    path = "c:\basin_data\Chile\TestCRN"
+    path = "c:\basin_data\Chile\test_Snow"
     prefix = "CRN_chile"
     PrepareDirectoriesForBasinSpawn(path,prefix)   
