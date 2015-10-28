@@ -28,6 +28,9 @@ def GetSnowShieldingFromRaster(path, prefix):
     #DEM_names = GetListOfRasters(path,prefix)
     Sample_names, SnowShield_values = GetCRNData(path, prefix)
     
+    # get rid of the underscores
+    Sample_names = RemoveUnderscoreFromSampleNames(Sample_names)   
+    
     # now spawn the folders
     UpdateRasterWithShielding(path, prefix,Sample_names,SnowShield_values)
 
@@ -42,12 +45,11 @@ def RemoveUnderscoreFromSampleNames(Sample_names):
             this_new_name = this_new_name+item
         new_sample_names.append(this_new_name)
         
-        print "Old name was: "+name+" and new name is: "+ new_sample_names[-1]
+        #print "Old name was: "+name+" and new name is: "+ new_sample_names[-1]
     
     return new_sample_names
         
     
-
 # This updates the raster file with an effective shielding
 def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
     
@@ -58,9 +60,19 @@ def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
     fmt_path = LSDost.AppendSepToDirectoryPath(fmt_path) 
     
     # now find the correct file
-    fname = fmt_path + prefix+"_CRNData.csv"
+    fname = fmt_path + prefix+"_CRNRasters.csv"
+    
+    # also make the outfile
+    outfname = fmt_path+prefix+"_SS_CRNRasters.csv"
+    outfile = open(outfname, 'w')
 
     new_lines = []    
+
+    print "The sample names are"
+    print Sample_names
+    
+    print "The snow shield values are: "
+    print Snowshield_values
 
     #See if the parameter files exist
     if os.access(fname,os.F_OK):
@@ -72,16 +84,22 @@ def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
             this_line = line.split(",")
             DEM_prefix = this_line[0]
             
+            print "The DEM prefix is: " + DEM_prefix
+            
             # Now get the sample name
             split_dem_prefix = DEM_prefix.split("_")
             sample_name = split_dem_prefix[-1]
             
+            print "The sample name is: " + sample_name
+            
             # get the index of the sample name to reference the shielding value
             i = Sample_names.index(sample_name)
             
+            print "the index of the sample names is: " + str(i) 
+            
             # calculate the effective depth. The 160 is the attenuation thickness in g/cm^2
             this_snow_depth = -160*np.log(Snowshield_values[i])
-            print "The shielding is: " +str(Snowshield_values[i])+ " and eff_depth is: " + this_snow_depth
+            print "The shielding is: " +str(Snowshield_values[i])+ " and eff_depth is: " + str(this_snow_depth)
             
             # update the snow effective depth
             this_line[1] = str(this_snow_depth)
@@ -91,8 +109,8 @@ def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
             new_lines.append(this_new_line)
             
     # this will get printed to file        
-    print "The file is: "
-    print new_lines            
+    for line in new_lines:    
+        outfile.write("%s\n" % line)  
             
 
 # This is the subfunction that actually makes the directories if none
@@ -116,13 +134,26 @@ def GetCRNData(path, prefix):
         this_file = open(fname, 'r')
         lines = this_file.readlines()
         
+        # get rid of the first line, since this has header information
+        lines.pop(0)
+        
         # now get the list of DEM prefixes
         for line in lines:
             this_line = line.split(",")
             SampleName = this_line[0]
-            SnowShield = float(this_line[8])
-            Sample_names.append(SampleName)
-            SnowShield_values.append(SnowShield)
+            
+            print "This line is: "
+            print this_line
+            
+            # check to see if there is a snow shield value
+            N_entries= len(this_line)
+            if (N_entries == 8):
+                SnowShield = float(this_line[7])
+                Sample_names.append(SampleName)
+                SnowShield_values.append(SnowShield)
+            else:
+                print "there is no snow shielding on this line"
+                SnowShield_values.append(1)
 
     else:
         print "*_CRNRData.csv file not found. Are you sure it is there and you have the correct path?"
@@ -160,6 +191,8 @@ def GetListOfRasters(path,prefix):
     return DEM_names
      
 if __name__ == "__main__":
-    path = "c:\basin_data\Chile\test_Snow"
-    prefix = "CRN_chile"
-    PrepareDirectoriesForBasinSpawn(path,prefix)   
+    #path = "/home/smudd/SMMDataStore/test_clone/topodata"
+    path = "T:\test_clone\topodata"    
+    #path = "c:\basin_data\Chile\test_Snow"
+    prefix = "SanBern_spawned"
+    GetSnowShieldingFromRaster(path,prefix)   
