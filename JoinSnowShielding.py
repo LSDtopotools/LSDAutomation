@@ -109,8 +109,10 @@ def UpdateRasterWithShielding(path, prefix,Sample_names,Snowshield_values):
             new_lines.append(this_new_line)
             
     # this will get printed to file        
-    for line in new_lines:    
-        outfile.write("%s\n" % line)  
+    for line in new_lines: 
+        # you have to get rid of the control characters
+        this_line = LSDost.RemoveEscapeCharacters(line)
+        outfile.write("%s\n" % this_line)  
             
 
 # This is the subfunction that actually makes the directories if none
