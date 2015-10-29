@@ -11,7 +11,6 @@ Created on Thu Jul 09 11:08:51 2015
 import os
 import LSDOSystemTools as LSDost
 
-
 # This function goes into a CRNRasters.csv file and makes a directory
 # for each raster listed. The c++ program prints the derivative rasters
 # into these folders

@@ -18,6 +18,7 @@ Created on Thu Jul 09 11:08:51 2015
 import os
 import LSDOSystemTools as LSDost
 import numpy as np
+import shutil
 
 # This function goes into a CRNRasters.csv file and makes a directory
 # for each raster listed. The c++ program prints the derivative rasters
@@ -33,6 +34,32 @@ def GetSnowShieldingFromRaster(path, prefix):
     
     # now spawn the folders
     UpdateRasterWithShielding(path, prefix,Sample_names,SnowShield_values)
+    
+    new_extension = "SS"
+    # now copy the parameter and CRNData files
+    CopyDataAndParam(path, prefix,new_extension)
+
+
+# this copies the CRNData and CNParameters file with a new extension
+def CopyDataAndParam(path, prefix,new_extension):
+
+    #first get directory path into the correct format 
+    fmt_path = LSDost.ReformatSeperators(path)
+    
+    # add the trailing seperator
+    fmt_path = LSDost.AppendSepToDirectoryPath(fmt_path)     
+
+    # now find the correct file
+    Datafname = fmt_path + prefix+"_CRNData.csv"
+    Paramfname = fmt_path + prefix+".CRNParam"
+    
+    Datafname_out = fmt_path + prefix+"_"+new_extension+"_CRNData.csv"
+    Paramfname_out = fmt_path + prefix+"_"+new_extension+".CRNParam"
+    
+    # copy the files
+    shutil.copyfile(Datafname, Datafname_out)
+    shutil.copyfile(Paramfname, Paramfname_out)
+    
 
 # sample names can't have an underscore so get rid of it    
 def RemoveUnderscoreFromSampleNames(Sample_names):
@@ -156,6 +183,7 @@ def GetCRNData(path, prefix):
             else:
                 print "there is no snow shielding on this line"
                 SnowShield_values.append(1)
+                Sample_names.append(SampleName)
 
     else:
         print "*_CRNRData.csv file not found. Are you sure it is there and you have the correct path?"
@@ -196,5 +224,5 @@ if __name__ == "__main__":
     #path = "/home/smudd/SMMDataStore/test_clone/topodata"
     path = "T:\test_clone\topodata"    
     #path = "c:\basin_data\Chile\test_Snow"
-    prefix = "SanBern_spawned"
+    prefix = "SanBern_Spawned"
     GetSnowShieldingFromRaster(path,prefix)   
