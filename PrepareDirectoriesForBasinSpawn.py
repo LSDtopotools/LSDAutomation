@@ -71,10 +71,11 @@ def GetListOfRasters(path,prefix):
             
     else:
         print "*_CRNRasters.csv file not found. Are you sure it is there and you have the correct path?"
+        print "Filename is " + fname
 
     return DEM_names
      
 if __name__ == "__main__":
-    path = "c:\basin_data\Chile\TestCRN"
-    prefix = "CRN_chile"
+    path = "/home/smudd/SMMDataStore/analysis_for_papers/Manny_idaho"
+    prefix = "Idaho"
     PrepareDirectoriesForBasinSpawn(path,prefix)   
