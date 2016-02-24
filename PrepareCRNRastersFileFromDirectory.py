@@ -48,6 +48,9 @@ def prepare_CRNRasters_file(path,prefix):
             elif Prefix[-7:] == "_snowBL":
                 print "This is a snow raster"
                 snow_shield_names.append(Prefix)
+            elif Prefix[-7:] == "_SnowBL":
+                print "This is a snow raster"
+                snow_shield_names.append(Prefix)                
             elif Prefix[-9:] == "_snowclip":
                 print "This is a snow raster"
                 snow_shield_names.append(Prefix)
@@ -89,22 +92,23 @@ def prepare_CRNRasters_file(path,prefix):
                     this_slfs_name = slfs
                     
             if (this_ts_name == "NULL" and this_sns_name == "NULL" and this_slfs_name == "NULL"):
+                print "I can't find any other rasters for this DEM: " + raster_name
                 this_csv_line = raster_name
             else:
                 this_csv_line = raster_name+","
                 
-            if this_sns_name == "NULL":
-                this_csv_line = this_csv_line+"0,"
-            else:
-                this_csv_line = this_csv_line+this_sns_name+","
+                if this_sns_name == "NULL":
+                    this_csv_line = this_csv_line+"0,"
+                else:
+                    this_csv_line = this_csv_line+this_sns_name+","
                 
-            if this_slfs_name == "NULL":
-                this_csv_line = this_csv_line+"0"
-            else:
-                this_csv_line = this_csv_line+this_slfs_name
+                if this_slfs_name == "NULL":
+                    this_csv_line = this_csv_line+"0"
+                else:
+                    this_csv_line = this_csv_line+this_slfs_name
 
-            if not this_ts_name == "NULL":
-                this_csv_line = this_csv_line+","+this_ts_name
+                if not this_ts_name == "NULL":
+                    this_csv_line = this_csv_line+","+this_ts_name
 
             # low append to the list                    
             csv_strings.append(this_csv_line)
@@ -119,6 +123,7 @@ def prepare_CRNRasters_file(path,prefix):
         f.close()
     
 if __name__ == "__main__":
-    path = "T:\\analysis_for_papers\\Manny_idaho\\HarringCreek"
+    #path = "T:\\analysis_for_papers\\Manny_idaho\\HarringCreek"
+    path = "C:\\basin_data\\Manny_Idaho\\"    
     prefix = "Idaho"
     prepare_CRNRasters_file(path,prefix)      
