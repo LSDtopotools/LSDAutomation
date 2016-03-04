@@ -119,6 +119,9 @@ def prepare_CRNRasters_file(path,prefix):
         f.close()
     
 if __name__ == "__main__":
-    path = "T:\\analysis_for_papers\\Manny_idaho\\HarringCreek"
-    prefix = "Idaho"
+    #path = "T:\\analysis_for_papers\\Manny_idaho\\HarringCreek"
+    #path = "T:\\analysis_for_papers\\Cosmo_paper\\Dethier\\zone54"
+    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Dethier/zone54"
+    prefix = "Dethier"
+    print "path is: " + path
     prepare_CRNRasters_file(path,prefix)      
