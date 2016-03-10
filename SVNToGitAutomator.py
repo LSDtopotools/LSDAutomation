@@ -23,6 +23,8 @@ import LSDOSystemTools as LSDost
 import os
 import shutil
 
+# This goes into a data directory and trawls any makefiles for the relevant .cpp and .hpp
+# files necessary to compile the code. 
 def GetRequiredFilesFromFolder(DataDirectory):
     
     #print "Current directory is: " + os.getcwd()   
@@ -122,7 +124,7 @@ def GetRequiredFilesFromFolder(DataDirectory):
     return required_files_noduplicates
 
 # This function checks the file structures and either makes directories or
-# throws errors when fiel structures do not exist
+# throws errors when file structures do not exist
 def CheckFileStructuresForCopy(ObjectsDirectory,DriverDirectory,TargetDirectory):
     # Format the target directories
     Td = LSDost.ReformatSeperators(TargetDirectory)   
@@ -233,7 +235,7 @@ def CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDire
         
     print "=============================================="             
                     
-
+# This is to test if the a make file actually results in a program
 def TestMake(Path,Makefile):
     """
     Make the file Makefile stored in Path and return True if the returncode is
@@ -262,15 +264,17 @@ def TestMake(Path,Makefile):
 if __name__ == "__main__":
     # YOU NEED TO MODIFY THIS DIRECTORY
     
-    # THis one is for running in windows
+    # This one is for running in windows
+    # If you are in windows uncomment and comment out the linux version
     #ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
     #DriverDirectory = 'Analysis_driver'
     #TargetDirectory = 'T:\Git_projects\LSDTopoTools_AnalysisDriver'
     
     # This one is for running directly in linux
+    # If you are in linux uncomment and comment out the windows version
     ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
-    DriverDirectory = 'driver_functions_ChiMap'
-    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMap'   
+    DriverDirectory = 'driver_functions_MuddChi2014'
+    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMudd2014'   
     
     
     CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
