@@ -268,13 +268,13 @@ if __name__ == "__main__":
     # If you are in windows uncomment and comment out the linux version
     #ObjectsDirectory = 'T:\devel_projects\LSDTopoTools\trunk'
     #DriverDirectory = 'Analysis_driver'
-    #TargetDirectory = 'T:\Git_projects\LSDTopoTools_AnalysisDriver'
+    #TargetDirectory = 'T:\Git_projects\LSDTopoTools_CRNBasinwide'
     
     # This one is for running directly in linux
     # If you are in linux uncomment and comment out the windows version
     ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
-    DriverDirectory = 'driver_functions_MuddChi2014'
-    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_ChiMudd2014'   
+    DriverDirectory = 'driver_functions_CRNBasinwide'
+    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_CRNBasinwide'   
     
     
     CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    

@@ -15,6 +15,10 @@ from glob import glob
 
 def prepare_CRNRasters_file(path,prefix):
     
+    print "\n\nHello! I am here to help you format your LSDRasters file."
+    print "I will look in your directories for DEMs and shielding rasters, and write them into your LSDRasters file."
+    print "It is my pleasure to perform this service for you!"
+    
     # first, make sure path is working
     path = LSDOst.ReformatSeperators(path)
     path = LSDOst.AppendSepToDirectoryPath(path)
@@ -63,7 +67,7 @@ def prepare_CRNRasters_file(path,prefix):
             elif Prefix[-7:] == "_HS":
                 print "This is a hillshade raster"
             else:
-                print "No matching pattern, assuming a DEM"
+                print "No matching pattern for shielding (topo, self or snow) so I am assuming this is a DEM\n"
                 raster_names.append(Prefix)
                 
         # now print these to a rasters csv file
@@ -75,7 +79,7 @@ def prepare_CRNRasters_file(path,prefix):
             
             # search for toposhield
             # There is probably a more efficient way to do this but it gets the job done
-            # Loop through all the toposheidl names and find the one that contains the
+            # Loop through all the toposhield names and find the one that contains the
             # raster name
             for ts in toposhield_names:
                 if raster_name in ts:
@@ -92,7 +96,7 @@ def prepare_CRNRasters_file(path,prefix):
                     this_slfs_name = slfs
                     
             if (this_ts_name == "NULL" and this_sns_name == "NULL" and this_slfs_name == "NULL"):
-                print "I can't find any other rasters for this DEM: " + raster_name
+                print "I have a DEM: " + raster_name + " only (no snow, self or toposhield rasters)." 
                 this_csv_line = raster_name
             else:
                 this_csv_line = raster_name+","
@@ -125,8 +129,10 @@ def prepare_CRNRasters_file(path,prefix):
 if __name__ == "__main__":
     #path = "T:\\analysis_for_papers\\Manny_idaho\\HarringCreek"
     #path = "T:\\analysis_for_papers\\Cosmo_paper\\Dethier\\zone54"
-    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Dethier/zone54"
-    prefix = "Dethier"
+    #path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Dethier/zone54"
+    #prefix = "Dethier"
+    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Zone43"
+    prefix = "zone43"    
     print "path is: " + path
 
     prepare_CRNRasters_file(path,prefix)      
