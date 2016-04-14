@@ -131,7 +131,7 @@ if __name__ == "__main__":
     #path = "T:\\analysis_for_papers\\Cosmo_paper\\Dethier\\zone54"
     #path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Dethier/zone54"
     #prefix = "Dethier"
-    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Zone43"
+    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Scherler"
     prefix = "zone43"    
     print "path is: " + path
 
