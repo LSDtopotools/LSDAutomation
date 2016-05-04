@@ -21,7 +21,7 @@ def KillBibtexURL(filename, newfilename):
         new_lines = []
         
         for line in lines:
-            if("Url" not in line):
+            if("Url" not in line and "url" not in line):
                 new_lines.append(line)
                 new_file.write(line)
         new_file.close()
@@ -32,6 +32,6 @@ def KillBibtexURL(filename, newfilename):
                 
 if __name__ == "__main__":
     
-    filename = "T://Papers_LaTeX//crn_basinwide_paper//Cosmogenics3.bib"
-    newfilename = "T://Papers_LaTeX//crn_basinwide_paper//Cosmogenicstest.bib"
+    filename = "T://Papers_LaTeX//length_scale_paper//GR_version2.bib"
+    newfilename = "T://Papers_LaTeX//length_scale_paper//GR_version3.bib"
     KillBibtexURL(filename, newfilename)

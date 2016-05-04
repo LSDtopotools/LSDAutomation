@@ -131,8 +131,8 @@ if __name__ == "__main__":
     #path = "T:\\analysis_for_papers\\Cosmo_paper\\Dethier\\zone54"
     #path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Dethier/zone54"
     #prefix = "Dethier"
-    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/Scherler"
-    prefix = "zone43"    
+    path = "/home/smudd/SMMDataStore/analysis_for_papers/Cosmo_paper/new/Dethier"
+    prefix = "zone54"    
     print "path is: " + path
 
     prepare_CRNRasters_file(path,prefix)      
