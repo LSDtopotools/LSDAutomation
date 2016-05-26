@@ -81,8 +81,28 @@ def TestParsing():
 
     print "Type of 3 is: "
     print type(joe3)     
+
+def TestListParsing():
+
+    List1 = ['1', '1.1', '2']
+    List2 = ['1', '1a','2']
+    List3 = ['1','2','3']
     
+    joe1 = LSDost.ParseListToType(List1)
+    joe2 = LSDost.ParseListToType(List2)
+    joe3 = LSDost.ParseListToType(List3)
+    
+    print "Type of 1 is: "
+    print type(joe1[0])
+
+    print "Type of 2 is: "
+    print type(joe2[0])
+
+    print "Type of 3 is: "
+    print type(joe3[0])   
+
     
 if __name__ == "__main__":
     #STestOSTools() 
-    TestParsing()    
+    #TestParsing()
+    TestListParsing()    

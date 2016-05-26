@@ -151,9 +151,17 @@ def RemoveEscapeCharacters(line):
     line = line.rstrip().replace('\n', '\\n')  
     line = line.rstrip().replace('\f', '\\f')  
     line = line.rstrip().replace('\v', '\\v') 
-    
+        
     # this last one deals with the infuriating special case of \b
     line = line.rstrip().replace('\x08', '\\b')     
+    
+    # get rid of leading and trailing spaces
+    line = line.strip()     
+    
+    return line
+    
+def RemoveWhitespace(line):
+    line = line.replace(" ", "")
     return line
 
 # This function takes a string. If it is an integer, it returns an integer, 
@@ -166,6 +174,45 @@ def ParseStringToType(A_string):
             return float(A_string)
         except ValueError:
             return A_string    
+
+# This takes a list and returns either ints, floats or strings
+# If any element in the list is a string, all the elements are converted to string
+# If there are no strings, it is converted to ins unless a single element is a
+# float, in which case all elements are floats        
+def ParseListToType(A_list):   
+    have_string = False
+    have_float = False
+    new_list = []    
+    
+    for element in A_list:
+        try:
+            int(element)
         
-   
+        except ValueError:
+            
+            try: 
+                float(element)
+                have_float = True
+            
+            except ValueError:
+                have_string = True
+                
+    if have_string:
+        #print "I found a string"
+        for element in A_list:
+            new_list.append(element)
+    else:
+        if have_float:
+            #print "These are floats"
+            for element in A_list:
+                new_list.append(float(element))
+        else:
+            #print "These are ints"
+            for element in A_list:
+                new_list.append(int(element)) 
+                
+    return new_list
+                
+    
+        
         
