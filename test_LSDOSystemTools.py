@@ -61,7 +61,28 @@ def TestOSTools():
     print "\n\n"
     print "The last directory name in: " + newnewpath
     name = LSDost.GetLastDirectoryLevel(newnewpath)
-    print "is: " + name    
+    print "is: " + name   
+    
+def TestParsing():
+
+    string1 = "13"
+    string2 = "24.1"
+    string3 = "yoyoma"
+    
+    joe1 = LSDost.ParseStringToType(string1)
+    joe2 = LSDost.ParseStringToType(string2)
+    joe3 = LSDost.ParseStringToType(string3)
+    
+    print "Type of 1 is: "
+    print type(joe1)
+
+    print "Type of 2 is: "
+    print type(joe2)
+
+    print "Type of 3 is: "
+    print type(joe3)     
+    
     
 if __name__ == "__main__":
-    TestOSTools()     
+    #STestOSTools() 
+    TestParsing()    

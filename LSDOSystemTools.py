@@ -155,6 +155,17 @@ def RemoveEscapeCharacters(line):
     # this last one deals with the infuriating special case of \b
     line = line.rstrip().replace('\x08', '\\b')     
     return line
-    
-            
-    
+
+# This function takes a string. If it is an integer, it returns an integer, 
+# if it is floating point, it returns that, otherwise it returns the string.     
+def ParseStringToType(A_string):
+    try:
+        return int(A_string)
+    except ValueError:
+        try: 
+            return float(A_string)
+        except ValueError:
+            return A_string    
+        
+   
+        
