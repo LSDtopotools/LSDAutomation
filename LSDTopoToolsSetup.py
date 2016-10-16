@@ -139,6 +139,54 @@ def CloneMakeAnalysisDriver(the_base_directory):
 
 
 #=============================================================================
+# This function clones both the test data and the workshop data from github
+#=============================================================================
+def CloneMakeChiMudd(the_base_directory):
+    git = "git"
+    clone = "clone"
+    pull = "pull"
+    origin = "origin"
+    master = "master"
+    
+    print "I am going to check if the repository exists."
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChiMudd2014/LSDRaster.cpp"
+    if not os.path.isfile(file):
+        print "I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_ChiMudd2014 repo."
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_ChiMudd2014.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChiMudd2014"
+        subprocess.call([git,clone,repo_address,target_directory])
+    else:
+        print "The repo with " + file+ " exists. I am updating."
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChiMudd2014/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_ChiMudd2014/.git"
+        subprocess.call([git,git_worktree,git_dir,pull,origin,master])    
+        
+    print "I've got the repository. Now I am going to make the program for you."
+    make = "make"
+    C_flag = "-C"
+    LSDTTpath = "LSDTopoTools/Git_projects/"
+    f_flag = "-f"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_ChiMudd2014/driver_functions_MuddChi2014/"
+    target_makefile = "chi_mapping_tool.make"
+    
+    target = target_path+target_makefile
+    print target
+    
+    #Let me just check to make sure the target makefile exists
+    #if not os.access(target_path,os.F_OK):
+        
+    if not os.path.isfile(target):
+        print "The makefile doesn't exist. Check your filenames and paths."
+    else:
+        print "Makefile is here, lets run make!"
+        
+    subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
+    print "You Chi tool is now ready to run!"
+    print "Note if make said it didn't have anything to do it means you already compiled the program."
+#=============================================================================   
+
+
+#=============================================================================
 # This is the main function that drives all cloning and directory creation
 #=============================================================================
 def LSDTopoToolsSetUp(WantHomeDirectory = True):
