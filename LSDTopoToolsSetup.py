@@ -7,6 +7,9 @@
 import os
 import subprocess
 
+#=============================================================================
+# This function builds the directory trees
+#=============================================================================
 def BuildDirectoryTree(the_base_directory):
     
     print "I am now going to build the initial directory structure."
@@ -39,8 +42,14 @@ def BuildDirectoryTree(the_base_directory):
         print path
     else:
         print "Path: " +path+" already exists."  
-
+#=============================================================================
+        
+        
+        
+        
+#=============================================================================
 # This function clones both the test data and the workshop data from github
+#=============================================================================
 def CloneData(the_base_directory):
     git = "git"
     clone = "clone"
@@ -59,10 +68,10 @@ def CloneData(the_base_directory):
         print "The repo with " + file+ " exists. I am updating."
         git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/"
         git_dir = "--git-dir="+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/.git"
-        print "I am calling a subprocess with the following entries:"
-        print git
-        print git_worktree
-        print git_dir      
+        #print "I am calling a subprocess with the following entries:"
+        #print git
+        #print git_worktree
+        #print git_dir      
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])
     
     print "/n/nI am going to check the workshop data files."
@@ -77,8 +86,61 @@ def CloneData(the_base_directory):
         git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
         git_dir = "--git-dir="+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/.git"
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])          
-        
+#=============================================================================
 
+
+
+#=============================================================================
+# This function clones both the test data and the workshop data from github
+#=============================================================================
+def CloneMakeAnalysisDriver(the_base_directory):
+    git = "git"
+    clone = "clone"
+    pull = "pull"
+    origin = "origin"
+    master = "master"
+    
+    print "I am going to check if the repository exists."
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_AnalysisDriver/LSDRaster.cpp"
+    if not os.path.isfile(file):
+        print "I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_AnalysisDriver repo."
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_AnalysisDriver.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_AnalysisDriver"
+        subprocess.call([git,clone,repo_address,target_directory])
+    else:
+        print "The repo with " + file+ " exists. I am updating."
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_AnalysisDriver/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_AnalysisDriver/.git"
+        subprocess.call([git,git_worktree,git_dir,pull,origin,master])    
+        
+    print "I've got the repository. Now I am going to make the program for you."
+    make = "make"
+    C_flag = "-C"
+    LSDTTpath = "LSDTopoTools/Git_projects/"
+    f_flag = "-f"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_AnalysisDriver/Analysis_driver/"
+    target_makefile = "Drive_analysis_from_paramfile.make"
+    
+    target = target_path+target_makefile
+    print target
+    
+    #Let me just check to make sure the target makefile exists
+    #if not os.access(target_path,os.F_OK):
+        
+    if not os.path.isfile(target):
+        print "The makefile doesn't exist. Check your filenames and paths."
+    else:
+        print "Makefile is here, lets run make!"
+        
+    subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
+    print "You Analysis_driver is now ready to run!"
+    print "Note if make said it didn't have anything to do it means you already compiled the program."
+#=============================================================================        
+
+
+#=============================================================================
+# This is the main function that drives all cloning and directory creation
+#=============================================================================
 def LSDTopoToolsSetUp(WantHomeDirectory = True):
     
     print "=================================================="
@@ -139,8 +201,11 @@ def LSDTopoToolsSetUp(WantHomeDirectory = True):
     BuildDirectoryTree(the_base_directory)
             
     print "\n\nI've built the directories. I will now clone the test data."
-    CloneData(the_base_directory)    
-
+    CloneData(the_base_directory)  
+    
+    print "\n\nNow I'll get the analysis driver and compile it."
+    CloneMakeAnalysisDriver(the_base_directory)
+#=============================================================================
         
     
     
