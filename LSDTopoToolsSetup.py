@@ -41,7 +41,7 @@ def GetBaseDirectory(WantHomeDirectory = True):
     
     print "\n\nThe location of your LSDTopoTools build is:"
     print the_base_directory
-    return ths_base_directory
+    return the_base_directory
 #=============================================================================
     
     
@@ -111,7 +111,7 @@ def CloneData(the_base_directory):
         #print git_dir      
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])
     
-    print "/n/nI am going to check the workshop data files."
+    print "\n\nI am going to check the workshop data files."
     file = the_base_directory+"/LSDTopoTools/Topographic_projects/LSDTT_workshop_data/WA.bil"
     if not os.path.isfile(file):
         print "There is no test data. Cloning in a subprocess"
@@ -171,7 +171,7 @@ def CloneMakeAnalysisDriver(the_base_directory):
         
     subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
     print "You Analysis_driver is now ready to run!"
-    print "Note if make said it didn't have anything to do it means you already compiled the program."
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================        
 
 
@@ -221,7 +221,7 @@ def CloneMakeChiTools(the_base_directory):
         
     subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
     print "You Chi tool is now ready to run!"
-    print "Note if make said it didn't have anything to do it means you already compiled the program."
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================   
 
 
@@ -268,7 +268,6 @@ def CloneMakeChiMudd(the_base_directory):
     for target_makefile in makefile_list:
         
         print "I am making using the makefile: "+target_makefile
-        target_makefile = "chi_mapping_tool.make"
     
         target = target_path+target_makefile
         
@@ -282,13 +281,13 @@ def CloneMakeChiMudd(the_base_directory):
         subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
     
     print "I've compiled everything you need to run the Mudd et al 2014 JGR-ES analyses!"
-    print "Note if make said it didn't have anything to do it means you already compiled the program."       
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."       
 #=============================================================================   
 
 #=============================================================================
 # This is the main function that drives all cloning and directory creation
 #=============================================================================
-def LSDTopoToolsDefault(ths_base_directory):
+def LSDTopoToolsDefault(the_base_directory):
     
     print "=================================================="
     print "Welcome to the LSDTopoTools setup tool!"
@@ -359,7 +358,7 @@ def main(argv):
         the_base_directory = GetBaseDirectory(False) 
         
     # Install or update the default repositories
-    LSDTopoToolsDefault(ths_base_directory)
+    LSDTopoToolsDefault(the_base_directory)
         
     # Now go through the optional installations    
     #if args.install_CRN:
