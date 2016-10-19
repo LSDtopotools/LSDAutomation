@@ -170,7 +170,7 @@ def CloneMakeAnalysisDriver(the_base_directory):
         print "Makefile is here, lets run make!"
         
     subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
-    print "You Analysis_driver is now ready to run!"
+    print "Your Analysis_driver is now ready to run!\n\n"
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================        
 
@@ -220,7 +220,7 @@ def CloneMakeChiTools(the_base_directory):
         print "Makefile is here, lets run make!"
         
     subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
-    print "You Chi tool is now ready to run!"
+    print "Your Chi tool is now ready to run!\n\n"
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================   
 
@@ -255,8 +255,7 @@ def CloneMakeCRN_CAIRN(the_base_directory):
     LSDTTpath = "LSDTopoTools/Git_projects/"
     f_flag = "-f"
     target_path = the_base_directory+LSDTTpath+"LSDTopoTools_CRNBasinwide/driver_functions_CRNBasinwide/"
-    target_makefile = "Basinwide_CRN.make"
-    
+
     # Get the list of makefiles
     makefile_list = []
     makefile_list.append("Basinwide_CRN.make")
@@ -283,11 +282,68 @@ def CloneMakeCRN_CAIRN(the_base_directory):
         # Call make via subprocess
         subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
         
-    print "You CRN tools are now ready to run!"
+    print "Your CRN tools are now ready to run!\n\n"
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================   
 
+#=============================================================================
+# This function clones the channel extraction repo and makes the various tools
+#=============================================================================
+def CloneMakeChannelExtraction(the_base_directory):
+    git = "git"
+    clone = "clone"
+    pull = "pull"
+    origin = "origin"
+    master = "master"
+ 
+    # The below logic checks to see if the repo exist. If not it clones, if so it pulls, both using a 
+    # subprocess call to git
+    print "I am going to check if the repository exists."
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChannelExtraction/LSDRaster.cpp"
+    if not os.path.isfile(file):
+        print "I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_ChannelExtraction repo."
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_ChannelExtraction.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChannelExtraction"
+        subprocess.call([git,clone,repo_address,target_directory])
+    else:
+        print "The repo with " + file+ " exists. I am updating."
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_ChannelExtraction/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_ChannelExtraction/.git"
+        subprocess.call([git,git_worktree,git_dir,pull,origin,master])    
+        
+    print "I've got the repository. Now I am going to make the program for you."
+    make = "make"
+    C_flag = "-C"
+    LSDTTpath = "LSDTopoTools/Git_projects/"
+    f_flag = "-f"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_ChannelExtraction/driver_functions_ChannelExtraction/"
 
+    # Get the list of makefiles
+    makefile_list = []
+    makefile_list.append("channel_extraction_area_threshold.make")
+    makefile_list.append("channel_extraction_dreich.make")
+    makefile_list.append("channel_extraction_pelletier.make")
+    makefile_list.append("channel_extraction_wiener.make")
+    
+    # Loop through the makefile list, calling make as you go using a subprocess
+    for target_makefile in makefile_list:
+        
+        print "I am making using the makefile: "+target_makefile
+    
+        target = target_path+target_makefile
+        
+        # Check to see if the makefile is here
+        if not os.path.isfile(target):
+            print "The makefile doesn't exist. Check your filenames and paths."
+        else:
+            print "Makefile is here, lets run make!"
+        
+        # Call make via subprocess
+        subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
+        
+    print "Your channel extraction tools are now ready to run!\n\n"
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."
+#=============================================================================   
 
 #=============================================================================
 # This function clones and makes the programs for the analysis in Mudd et al 2014 JGR-ES
@@ -344,7 +400,7 @@ def CloneMakeChiMudd(the_base_directory):
         # Call make via subprocess
         subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
     
-    print "I've compiled everything you need to run the Mudd et al 2014 JGR-ES analyses!"
+    print "I've compiled everything you need to run the Mudd et al 2014 JGR-ES analyses!\n\n"
     #print "Note if make said it didn't have anything to do it means you already compiled the program."       
 #=============================================================================   
 
@@ -412,6 +468,8 @@ def main(argv):
                         help="If this is True, installs the CAIRN CRN package.")     
     parser.add_argument("-MChi", "--install_MuddChi2014",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses.") 
+    parser.add_argument("-CE", "--install_ChannelExtraction",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, installs programs needed for channel extraction.\nIMPORTANT: you need FFTW installed for this to work! On Ubuntu you can install with sudo apt-get install libfftw3-dev")     
     args = parser.parse_args()
 
     # Get the base directory of the installation
@@ -429,9 +487,9 @@ def main(argv):
         CloneMakeCRN_CAIRN(the_base_directory)    
     if args.install_MuddChi2014:
         CloneMakeChiMudd(the_base_directory)          
-        
+    if args.install_ChannelExtraction:
+        CloneMakeChannelExtraction(the_base_directory)        
     args = parser.parse_args() 
-
 #=============================================================================
     
     
