@@ -10,6 +10,42 @@ import sys, getopt
 import time
 
 #=============================================================================
+# This function gets the base directory
+#=============================================================================
+def GetBaseDirectory(WantHomeDirectory = True):
+    
+    # First, we need to find out if we are on vagrant
+    home_dir = os.path.expanduser("~")
+    this_dir = os.getcwd()
+    
+    print "\n\nI am first going to figure out where I will install the directory structures."
+    print "Your home directory is: "+home_dir
+    
+    # Now we go through some logic that tests if we are in a vagrant machine
+    vagrant_str = "vagrant"
+    if vagrant_str in home_dir:
+        print "You seem to be on a vagrant machine"
+        vagrant_switch = True
+        the_base_directory = "/"
+    else:
+        vagrant_switch = False
+        print "You don't seem to be using vagrant."
+        if WantHomeDirectory == True:
+            print "I am going to install on your home directory, which is here:"
+            print home_dir
+            the_base_directory = home_dir+"/"
+        else:
+            print "You set the WantHomeDirectory to false, so I am going to install here:"
+            print this_dir
+            the_base_directory = this_dir+"/"
+    
+    print "\n\nThe location of your LSDTopoTools build is:"
+    print the_base_directory
+    return ths_base_directory
+#=============================================================================
+    
+    
+#=============================================================================
 # This function builds the directory trees
 #=============================================================================
 def BuildDirectoryTree(the_base_directory):
@@ -189,7 +225,6 @@ def CloneMakeChiTools(the_base_directory):
 #=============================================================================   
 
 
-
 #=============================================================================
 # This function clones both the test data and the workshop data from github
 #=============================================================================
@@ -253,7 +288,7 @@ def CloneMakeChiMudd(the_base_directory):
 #=============================================================================
 # This is the main function that drives all cloning and directory creation
 #=============================================================================
-def LSDTopoToolsSetUp(WantHomeDirectory = True):
+def LSDTopoToolsDefault(ths_base_directory):
     
     print "=================================================="
     print "Welcome to the LSDTopoTools setup tool!"
@@ -282,33 +317,6 @@ def LSDTopoToolsSetUp(WantHomeDirectory = True):
     print "Directory tree in the current directory."
     print "==================================================="    
     
-    # First, we need to find out if we are on vagrant
-    home_dir = os.path.expanduser("~")
-    this_dir = os.getcwd()
-    
-    print "\n\nI am first going to figure out where I will install the directory structures."
-    print "Your home directory is: "+home_dir
-    
-    # Now we go through some logic that tests if we are in a vagrant machine
-    vagrant_str = "vagrant"
-    if vagrant_str in home_dir:
-        print "You seem to be on a vagrant machine"
-        vagrant_switch = True
-        the_base_directory = "/"
-    else:
-        vagrant_switch = False
-        print "You don't seem to be using vagrant."
-        if WantHomeDirectory == True:
-            print "I am going to install on your home directory, which is here:"
-            print home_dir
-            the_base_directory = home_dir+"/"
-        else:
-            print "You set the WantHomeDirectory to false, so I am going to install here:"
-            print this_dir
-            the_base_directory = this_dir+"/"
-    
-    print "\n\nThe location of your LSDTopoTools build is:"
-    print the_base_directory
     print "Note: if you are in vagrant the base directories should already exist."
     BuildDirectoryTree(the_base_directory)
             
@@ -317,6 +325,10 @@ def LSDTopoToolsSetUp(WantHomeDirectory = True):
     
     print "\n\nNow I'll get the analysis driver and compile it."
     CloneMakeAnalysisDriver(the_base_directory)
+    
+    print "\n\nNow I'll get the chi tool and compile it."
+    CloneMakeChiTools(the_base_directory)
+        
 #=============================================================================
 
 #=============================================================================
@@ -333,15 +345,30 @@ def main(argv):
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-id", "--installation_directory",type=int, default=0, choices=[0, 1],                        help="Tells the program where to install LSDTopoTools.\nOptions are: 0 == home directory, 1 == current directory.\nIf you are in vagrant it will ignore this option and install in the root directory.")
+    parser.add_argument("-CRN", "--install_CRN",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, installs the CRN packages.") 
+    parser.add_argument("-MChi", "--install_MuddChi2014",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses.") 
     args = parser.parse_args()
 
-    
+    # Get the base directory of the installation
+    the_base_directory = "~"
     if args.installation_directory == 0:
-        LSDTopoToolsSetUp(True)
+        the_base_directory = GetBaseDirectory(True)
     elif args.installation_directory == 1:
-        LSDTopoToolsSetUp(False)  
-    
-    #LSDTopoToolsSetUp() 
+        the_base_directory = GetBaseDirectory(False) 
+        
+    # Install or update the default repositories
+    LSDTopoToolsDefault(ths_base_directory)
+        
+    # Now go through the optional installations    
+    #if args.install_CRN:
+    #    CloneMakeCRN(the_base_directory)    
+    if args.install_MuddChi2014:
+        CloneMakeChiMudd(the_base_directory)          
+        
+    args = parser.parse_args() 
+
 #=============================================================================
     
     
