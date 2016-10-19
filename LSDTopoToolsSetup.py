@@ -128,7 +128,7 @@ def CloneData(the_base_directory):
 
 
 #=============================================================================
-# This function clones both the test data and the workshop data from github
+# This function clones and makes the analysis driver
 #=============================================================================
 def CloneMakeAnalysisDriver(the_base_directory):
     git = "git"
@@ -176,7 +176,7 @@ def CloneMakeAnalysisDriver(the_base_directory):
 
 
 #=============================================================================
-# This function clones both the test data and the workshop data from github
+# This function clones and makes the Chi Tool
 #=============================================================================
 def CloneMakeChiTools(the_base_directory):
     git = "git"
@@ -224,9 +224,73 @@ def CloneMakeChiTools(the_base_directory):
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================   
 
+#=============================================================================
+# This function clones the CRN repo and makes the CAIRN tool
+#=============================================================================
+def CloneMakeCRN_CAIRN(the_base_directory):
+    git = "git"
+    clone = "clone"
+    pull = "pull"
+    origin = "origin"
+    master = "master"
+ 
+    # The below logic checks to see if the repo exist. If not it clones, if so it pulls, both using a 
+    # subprocess call to git
+    print "I am going to check if the repository exists."
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_CRNBasinwide/LSDRaster.cpp"
+    if not os.path.isfile(file):
+        print "I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_CRNBasinwide repo."
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_CRNBasinwide.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_CRNBasinwide"
+        subprocess.call([git,clone,repo_address,target_directory])
+    else:
+        print "The repo with " + file+ " exists. I am updating."
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_CRNBasinwide/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_CRNBasinwide/.git"
+        subprocess.call([git,git_worktree,git_dir,pull,origin,master])    
+        
+    print "I've got the repository. Now I am going to make the program for you."
+    make = "make"
+    C_flag = "-C"
+    LSDTTpath = "LSDTopoTools/Git_projects/"
+    f_flag = "-f"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_CRNBasinwide/driver_functions_CRNBasinwide/"
+    target_makefile = "Basinwide_CRN.make"
+    
+    # Get the list of makefiles
+    makefile_list = []
+    makefile_list.append("Basinwide_CRN.make")
+    makefile_list.append("Soil_CRN.make")
+    makefile_list.append("Nested_CRN.make")
+    makefile_list.append("Check_CRN_basins.make")
+    makefile_list.append("Shielding_for_CRN.make")
+    makefile_list.append("SimpleSnowShield.make")
+    makefile_list.append("Spawn_DEMs_for_CRN.make")
+    
+    # Loop through the makefile list, calling make as you go using a subprocess
+    for target_makefile in makefile_list:
+        
+        print "I am making using the makefile: "+target_makefile
+    
+        target = target_path+target_makefile
+        
+        # Check to see if the makefile is here
+        if not os.path.isfile(target):
+            print "The makefile doesn't exist. Check your filenames and paths."
+        else:
+            print "Makefile is here, lets run make!"
+        
+        # Call make via subprocess
+        subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
+        
+    print "You CRN tools are now ready to run!"
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."
+#=============================================================================   
+
+
 
 #=============================================================================
-# This function clones both the test data and the workshop data from github
+# This function clones and makes the programs for the analysis in Mudd et al 2014 JGR-ES
 #=============================================================================
 def CloneMakeChiMudd(the_base_directory):
     git = "git"
@@ -345,7 +409,7 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("-id", "--installation_directory",type=int, default=0, choices=[0, 1],                        help="Tells the program where to install LSDTopoTools.\nOptions are: 0 == home directory, 1 == current directory.\nIf you are in vagrant it will ignore this option and install in the root directory.")
     parser.add_argument("-CRN", "--install_CRN",metavar='True or False',type=bool, default=False, 
-                        help="If this is True, installs the CRN packages.") 
+                        help="If this is True, installs the CAIRN CRN package.")     
     parser.add_argument("-MChi", "--install_MuddChi2014",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses.") 
     args = parser.parse_args()
@@ -361,8 +425,8 @@ def main(argv):
     LSDTopoToolsDefault(the_base_directory)
         
     # Now go through the optional installations    
-    #if args.install_CRN:
-    #    CloneMakeCRN(the_base_directory)    
+    if args.install_CRN:
+        CloneMakeCRN_CAIRN(the_base_directory)    
     if args.install_MuddChi2014:
         CloneMakeChiMudd(the_base_directory)          
         
