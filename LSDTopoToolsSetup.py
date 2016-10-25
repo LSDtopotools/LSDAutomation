@@ -439,6 +439,112 @@ def LSDTopoToolsDefault(the_base_directory):
         
 #=============================================================================
 
+
+
+
+#=============================================================================
+# This updates the ChiTool driver
+#=============================================================================
+def update_chi_tool_driver_test_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/Vagrant_ChiTool.driver"
+    
+    if not os.path.isfile(file):
+        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    else:
+        # open the file and read the lines
+        fo = open(filename, "r")
+        lines = fo.readlines()
+        fo.close()
+        
+        # Replace the filenames
+        lines[7] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/"
+        lines[8] = "write path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/"
+        
+        # write the new version of the file
+        file_for_output = open(filename,'w')
+        file_for_output.writelines(lines)
+        file_for_output.close()  
+        
+#=============================================================================       
+ 
+#=============================================================================
+# This updates the ChiTool driver
+#=============================================================================
+def update_chi_tool_driver_workshop_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/Workshop_ChiTool.driver"
+    
+    if not os.path.isfile(file):
+        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    else:
+        # open the file and read the lines
+        fo = open(filename, "r")
+        lines = fo.readlines()
+        fo.close()
+        
+        # Replace the filenames
+        lines[7] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
+        lines[8] = "write path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
+        
+        # write the new version of the file
+        file_for_output = open(filename,'w')
+        file_for_output.writelines(lines)
+        file_for_output.close()  
+        
+#=============================================================================       
+    
+        
+#=============================================================================
+# This updates the Analysis driver
+#=============================================================================
+def update_analysis_driver_test_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/Vagrant_Example.LSDTT_driver"
+    
+    if not os.path.isfile(file):
+        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    else:
+        # open the file and read the lines
+        fo = open(filename, "r")
+        lines = fo.readlines()
+        fo.close()
+        
+        # Replace the filenames
+        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/"
+        
+        # write the new version of the file
+        file_for_output = open(filename,'w')
+        file_for_output.writelines(lines)
+        file_for_output.close()  
+    
+    
+#=============================================================================                 
+    
+#=============================================================================
+# This updates the Analysis driver
+#=============================================================================
+def update_analysis_driver_workshop_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/Workshop_AD_example.LSDTT_driver"
+    
+    if not os.path.isfile(file):
+        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    else:
+        # open the file and read the lines
+        fo = open(filename, "r")
+        lines = fo.readlines()
+        fo.close()
+        
+        # Replace the filenames
+        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
+        
+        # write the new version of the file
+        file_for_output = open(filename,'w')
+        file_for_output.writelines(lines)
+        file_for_output.close()  
+    
+    
+#=============================================================================  
+    
+    
+    
 #=============================================================================
 # This is the main function that runs the whole thing 
 #=============================================================================
