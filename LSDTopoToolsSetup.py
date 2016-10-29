@@ -467,14 +467,25 @@ def update_chi_tool_driver_test_data(the_base_directory):
         
 #=============================================================================       
  
+    
+#=============================================================================
+# Bundles checking of the filenames
+#=============================================================================    
+def CheckPathsInParamfiles(the_base_directory):
+    update_chi_tool_driver_test_data(the_base_directory)
+    update_chi_tool_driver_workshop_data(the_base_directory)
+    update_analysis_driver_test_data(the_base_directory)
+    update_analysis_driver_workshop_data(the_base_directory)
+    
+    
 #=============================================================================
 # This updates the ChiTool driver
 #=============================================================================
-def update_chi_tool_driver_workshop_data(the_base_directory):
-    filename = the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/Workshop_ChiTool.driver"
+def update_chi_tool_driver_test_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/Vagrant_ChiTool.driver"
     
-    if not os.path.isfile(file):
-        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    if not os.path.isfile(filename):
+        print("Hmm, something has gone wrong, the Vagrant_ChiTool.driver file is not here.")
     else:
         # open the file and read the lines
         fo = open(filename, "r")
@@ -482,8 +493,8 @@ def update_chi_tool_driver_workshop_data(the_base_directory):
         fo.close()
         
         # Replace the filenames
-        lines[7] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
-        lines[8] = "write path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
+        lines[7] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/\n"
+        lines[8] = "write path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/\n"
         
         # write the new version of the file
         file_for_output = open(filename,'w')
@@ -492,15 +503,14 @@ def update_chi_tool_driver_workshop_data(the_base_directory):
         
 #=============================================================================       
     
-        
 #=============================================================================
-# This updates the Analysis driver
+# This updates the ChiTool driver
 #=============================================================================
-def update_analysis_driver_test_data(the_base_directory):
-    filename = the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/Vagrant_Example.LSDTT_driver"
+def update_chi_tool_driver_workshop_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/Workshop_ChiTool.driver"
     
-    if not os.path.isfile(file):
-        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    if not os.path.isfile(filename):
+        print("Hmm, something has gone wrong, the Workshop_ChiTool.driver file is not here.")
     else:
         # open the file and read the lines
         fo = open(filename, "r")
@@ -508,7 +518,33 @@ def update_analysis_driver_test_data(the_base_directory):
         fo.close()
         
         # Replace the filenames
-        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/"
+        lines[7] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/\n"
+        lines[8] = "write path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/\n"
+        
+        # write the new version of the file
+        file_for_output = open(filename,'w')
+        file_for_output.writelines(lines)
+        file_for_output.close()  
+        
+#=============================================================================  
+    
+    
+#=============================================================================
+# This updates the Analysis driver
+#=============================================================================
+def update_analysis_driver_test_data(the_base_directory):
+    filename = the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/Vagrant_Example.LSDTT_driver"
+    
+    if not os.path.isfile(filename):
+        print("Hmm, something has gone wrong, the Vagrant_Example.LSDTT_driver file is not here.")
+    else:
+        # open the file and read the lines
+        fo = open(filename, "r")
+        lines = fo.readlines()
+        fo.close()
+        
+        # Replace the filenames
+        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/Test_data/\n"
         
         # write the new version of the file
         file_for_output = open(filename,'w')
@@ -524,8 +560,8 @@ def update_analysis_driver_test_data(the_base_directory):
 def update_analysis_driver_workshop_data(the_base_directory):
     filename = the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/Workshop_AD_example.LSDTT_driver"
     
-    if not os.path.isfile(file):
-        print("Hmm, something has gone wrong, the chi tool driver file is not here.")
+    if not os.path.isfile(filename):
+        print("Hmm, something has gone wrong, the Workshop_AD_example.LSDTT_driver file is not here.")
     else:
         # open the file and read the lines
         fo = open(filename, "r")
@@ -533,7 +569,7 @@ def update_analysis_driver_workshop_data(the_base_directory):
         fo.close()
         
         # Replace the filenames
-        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/"
+        lines[6] = "read path: "+the_base_directory+"LSDTopoTools/Topographic_projects/LSDTT_workshop_data/\n"
         
         # write the new version of the file
         file_for_output = open(filename,'w')
@@ -564,7 +600,9 @@ def main(argv):
     parser.add_argument("-MChi", "--install_MuddChi2014",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses.") 
     parser.add_argument("-CE", "--install_ChannelExtraction",metavar='True or False',type=bool, default=False, 
-                        help="If this is True, installs programs needed for channel extraction.\nIMPORTANT: you need FFTW installed for this to work! On Ubuntu you can install with sudo apt-get install libfftw3-dev")     
+                        help="If this is True, installs programs needed for channel extraction.\nIMPORTANT: you need FFTW installed for this to work! On Ubuntu you can install with sudo apt-get install libfftw3-dev") 
+    parser.add_argument("-cp", "--check_paramfiles",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, the pathnames of the parameter files are checked and changed if the pathnames do not correspond to the the base path.") 
     args = parser.parse_args()
 
     # Get the base directory of the installation
@@ -575,7 +613,11 @@ def main(argv):
         the_base_directory = GetBaseDirectory(False) 
         
     # Install or update the default repositories
-    LSDTopoToolsDefault(the_base_directory)
+    #LSDTopoToolsDefault(the_base_directory)
+    
+    # Check to ensure paths in the test data are correct
+    if args.check_paramfiles:
+        CheckPathsInParamfiles(the_base_directory)
         
     # Now go through the optional installations    
     if args.install_CRN:
