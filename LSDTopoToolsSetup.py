@@ -477,10 +477,58 @@ def ParamFileChecker(the_base_directory):
     # First get the topographic data base directory
     topo_base = the_base_directory+"LSDTopoTools/Topographic_projects"
     
-    # Now find all the directories in these folders
-    for DirName in glob("*"+topo_base):
+    print("I am going to check the all the parameter files in Topographic_projects now.")
     
-        print "Working in directory: " DirName
+    # Now find all the directories in these folders
+    for DirName in glob(topo_base+"/*"):
+    
+        print("\n\nWorking in directory: " + DirName)
+        
+        # Now get all the driver files
+        for FileName in glob(DirName+"/*.driver"):
+            print("Working with file: " + FileName)
+            UpdatePathInParamfile(FileName,DirName)
+
+        # Same thing but with the LSDTT_driver files
+        for FileName in glob(DirName+"/*.LSDTT_driver"):
+            print("Working with file: " + FileName)
+            UpdatePathInParamfile(FileName,DirName)
+#=============================================================================
+
+#=============================================================================
+# This helper function looks for keywords in .driver and .LSDTT_driver files
+# and replaces paths
+#=============================================================================  
+def UpdatePathInParamfile(FileName,ThisPath):
+
+    # Get the contents of the parameter file 
+    fo = open(FileName, "r")
+    lines = fo.readlines()
+    fo.close()
+    
+    new_lines = []
+    
+    for line in lines:
+        if "read path: " in line:
+            this_line = line.split(": ")
+            path = this_line[1]
+            #print("Path in this file is: "+path)
+            new_line = "read path: "+ThisPath+"\n"
+            new_lines.append(new_line)
+        elif "write path: " in line:
+            this_line = line.split(": ")
+            path = this_line[1]
+            #print("Path in this file is: "+path)
+            new_line = "write path: "+ThisPath+"\n"
+            new_lines.append(new_line)
+        else:
+            new_lines.append(line)
+    
+    # Now print the new file
+    file_for_output = open(FileName,'w')
+    file_for_output.writelines(new_lines)
+    file_for_output.close()      
+#=============================================================================
 
 #=============================================================================
 # Bundles checking of the filenames
@@ -612,7 +660,7 @@ def main(argv):
     parser.add_argument("-CRN", "--install_CRN",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs the CAIRN CRN package.")     
     parser.add_argument("-MChi", "--install_MuddChi2014",metavar='True or False',type=bool, default=False, 
-                        help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses.") 
+                        help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses. Note that the chi tool is installed by default.") 
     parser.add_argument("-CE", "--install_ChannelExtraction",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs programs needed for channel extraction.\nIMPORTANT: you need FFTW installed for this to work! On Ubuntu you can install with sudo apt-get install libfftw3-dev") 
     parser.add_argument("-cp", "--check_paramfiles",metavar='True or False',type=bool, default=False, 
