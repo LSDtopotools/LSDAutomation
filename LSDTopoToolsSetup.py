@@ -5,6 +5,7 @@
 # @date 16-10-2016
 from __future__ import print_function
 import os
+from glob import glob
 import subprocess
 import sys, getopt
 import time
@@ -467,7 +468,20 @@ def update_chi_tool_driver_test_data(the_base_directory):
         
 #=============================================================================       
  
+
+#=============================================================================
+# This goes into all the data directories an works with any file that
+# has an extension .driver or LSDTT_driver
+#=============================================================================   
+def ParamFileChecker(the_base_directory):
+    # First get the topographic data base directory
+    topo_base = the_base_directory+"LSDTopoTools/Topographic_projects"
     
+    # Now find all the directories in these folders
+    for DirName in glob("*"+topo_base):
+    
+        print "Working in directory: " DirName
+
 #=============================================================================
 # Bundles checking of the filenames
 #=============================================================================    
@@ -617,7 +631,11 @@ def main(argv):
     
     # Check to ensure paths in the test data are correct
     if args.check_paramfiles:
-        CheckPathsInParamfiles(the_base_directory)
+        #CheckPathsInParamfiles(the_base_directory)
+        ParamFileChecker(the_base_directory)
+    
+    
+    
         
     # Now go through the optional installations    
     if args.install_CRN:
