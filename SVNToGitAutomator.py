@@ -307,7 +307,7 @@ def main(argv):
     print("DriverDirectory: "+DriverDirectory)
     
     
-    #CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)       
+    CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)       
 
 #=============================================================================
     
