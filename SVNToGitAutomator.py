@@ -22,6 +22,7 @@ from glob import glob
 import LSDOSystemTools as LSDost
 import os
 import shutil
+import sys
 
 # This goes into a data directory and trawls any makefiles for the relevant .cpp and .hpp
 # files necessary to compile the code. 
@@ -259,9 +260,60 @@ def TestMake(Path,Makefile):
         return True
     else:
         return False
+
+
+
+
+#=============================================================================    
+# This is just a welcome screen that is displayed if no arguments are provided.
+#=============================================================================
+def print_welcome():
+
+    print("\n\n=======================================================================")
+    print("Hello there, I am going to help you move some stuff into github from a main repository")
+    print("You will need to tell me what to do.")
+
+    print("=======================================================================\n\n ")
+#=============================================================================
+
+
+#=============================================================================
+# This is the main function that runs the whole thing 
+#=============================================================================
+def main(argv):
+ 
+    # If there are no arguments, send to the welcome screen
+    if not len(sys.argv) > 1:
+        print_welcome()
+        sys.exit()
+
+    # Get the arguments
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-ODir", "--ObjectsDirectory",type=str, default='/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk',
+                        help="The directory containing the objects.")
+    parser.add_argument("-TDir", "--TargetDirectory",type=str, default='/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_AnalysisDriver',
+                        help="The target directory.")     
+    parser.add_argument("-DDir", "--DriverDirectory",type=str, default='/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_AnalysisDriver', 
+                        help="The directory of the driver files. Note you do not need the full path, just the name of the driver directory.") 
+    args = parser.parse_args()
+
+    ObjectsDirectory = args.ObjectsDirectory
+    TargetDirectory = args.TargetDirectory
+    DriverDirectory = args.DriverDirectory
+    
+    print("ObjectDirectory: "+ObjectsDirectory) 
+    print("TargetDirectory: "+TargetDirectory)
+    print("DriverDirectory: "+DriverDirectory)
+    
+    
+    #CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)       
+
+#=============================================================================
     
 
 if __name__ == "__main__":
+    main(sys.argv[1:])
     # YOU NEED TO MODIFY THIS DIRECTORY
     
     # This one is for running in windows
@@ -272,12 +324,12 @@ if __name__ == "__main__":
     
     # This one is for running directly in linux
     # If you are in linux uncomment and comment out the windows version
-    ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
-    DriverDirectory = 'Analysis_driver'
-    TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_AnalysisDriver'   
+    #ObjectsDirectory = '/home/smudd/SMMDataStore/devel_projects/LSDTopoTools/trunk'
+    #DriverDirectory = 'Analysis_driver'
+    #TargetDirectory = '/home/smudd/SMMDataStore/Git_projects/LSDTopoTools_AnalysisDriver'   
     
     
-    CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
+    #CopyRequiredFilesToGitRepository(ObjectsDirectory,DriverDirectory,TargetDirectory)    
     
     
     #DataDirectory =  'T:\devel_projects\LSDTopoTools\trunk\driver_functions_MuddChi2014'
