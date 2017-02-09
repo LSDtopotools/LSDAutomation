@@ -312,10 +312,12 @@ def CloneMakeChannelExtraction(the_base_directory):
 
     # Get the list of makefiles
     makefile_list = []
-    makefile_list.append("channel_extraction_area_threshold.make")
-    makefile_list.append("channel_extraction_dreich.make")
-    makefile_list.append("channel_extraction_pelletier.make")
-    makefile_list.append("channel_extraction_wiener.make")
+    #makefile_list.append("channel_extraction_area_threshold.make")
+    #makefile_list.append("channel_extraction_dreich.make")
+    #makefile_list.append("channel_extraction_pelletier.make")
+    #makefile_list.append("channel_extraction_wiener.make")
+    makefile_list.append("channel_extraction_tool.make") 
+    
     
     # Loop through the makefile list, calling make as you go using a subprocess
     for target_makefile in makefile_list:
