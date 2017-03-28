@@ -404,8 +404,8 @@ def CloneMakeChiMudd(the_base_directory):
 # Clubb et al. (in prep)
 #=============================================================================
 def CloneMakeTerraceFloodplain(the_base_directory):
-    
-    # before we do anything we need to make sure that PCL is installed
+
+    # before we do anything we need to make sure that PCL and cmake are installed
     sudo = "sudo"
     aptget = "apt-get"
     update = "update"
@@ -414,14 +414,16 @@ def CloneMakeTerraceFloodplain(the_base_directory):
     ppa = "ppa:v-launchpad-jochen-sprickerhof-de/pcl"
     libpcl = "libpcl-all"
     yes = "-y"
-    
-    print("I need to check if the Point Cloud Library (PCL) is installed.")
+    cmake = "cmake"
+
+    print("I need to check if cmake and the Point Cloud Library (PCL) are installed.")
     print("If not this might take a while!")
+    subprocess.call([sudo,aptget,install,cmake])
     subprocess.call([sudo,repo,yes,ppa])
     subprocess.call([sudo,aptget,update])
     subprocess.call([sudo,aptget,install,yes,libpcl])
-    
-    
+
+
     git = "git"
     clone = "clone"
     pull = "pull"
@@ -443,12 +445,14 @@ def CloneMakeTerraceFloodplain(the_base_directory):
         git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/.git"
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])
 
-    print("I've got the repository. Now I am going to make the program for you.")
-    print("+++I AM AFRAID THIS DOESN'T WORK AT THE MOMENT!\n")
-    cmake = "cmake"
+    print("I've got the repository. Now I am going to make the programs for you.")
+    #print("+++I AM AFRAID THIS DOESN'T WORK AT THE MOMENT!\n")
     bash = "bash"
     LSDTTpath = "LSDTopoTools/Git_projects/"
     target_path = the_base_directory+LSDTTpath+"LSDTopoTools_TerraceExtraction/driver_functions_TerraceExtraction/"
+    make = "make"
+    C_flag = "-C"
+    f_flag = "-f"
 
     # get the current directory
     cwd = os.getcwd()
@@ -456,6 +460,9 @@ def CloneMakeTerraceFloodplain(the_base_directory):
     # Get the list of makefiles
     bash_list = []
     bash_list.append("get_terraces.sh")
+
+    make_list = []
+    make_list.append("get_floodplains.make")
 
     # Loop through the makefile list, calling make as you go using a subprocess
     for target_bash_script in bash_list:
@@ -475,7 +482,20 @@ def CloneMakeTerraceFloodplain(the_base_directory):
 
         os.chdir(cwd)
 
-    print("The compilation is working now!!! WOOOOOOOOO!!!!\n\n")
+    for target_makefile in make_list:
+        print("I am making using the makefile: "+target_makefile)
+        target = target_path+target_makefile
+
+        # Check to see if the makefile is here
+        if not os.path.isfile(target):
+            print("The makefile doesn't exist. Check your filenames and paths.")
+        else:
+            print("Makefile is here, lets run make!")
+
+        # Call make via subprocess
+        subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
+
+    print("I've compiled your floodplain and terrace code. Happy terracing!\n\n")
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================
 
