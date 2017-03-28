@@ -398,10 +398,29 @@ def CloneMakeChiMudd(the_base_directory):
     #print "Note if make said it didn't have anything to do it means you already compiled the program."       
 #=============================================================================   
 
+
 #=============================================================================
 # This function clones and makes the programs for the analysis in Mudd et al 2014 JGR-ES
 #=============================================================================
 def CloneMakeTerraceFloodplain(the_base_directory):
+    
+    # before we do anything we need to make sure that PCL is installed
+    sudo = "sudo"
+    aptget = "apt-get"
+    update = "update"
+    install = "install"
+    repo = "add-apt-repository"
+    ppa = "ppa:v-launchpad-jochen-sprickerhof-de/pcl"
+    libpcl = "libpcl-all"
+    yes = "-y"
+    
+    print("I need to check if the Point Cloud Library (PCL) is installed.")
+    print("If not this might take a while!")
+    subprocess.call([sudo,repo,yes,ppa])
+    subprocess.call([sudo,aptget,update])
+    subprocess.call([sudo,aptget,install,yes,libpcl])
+    
+    
     git = "git"
     clone = "clone"
     pull = "pull"
@@ -435,7 +454,7 @@ def CloneMakeTerraceFloodplain(the_base_directory):
     
     # Get the list of makefiles
     bash_list = []
-    bash_list.append("compile.sh")
+    bash_list.append("get_terraces.sh")
     
     # Loop through the makefile list, calling make as you go using a subprocess
     for target_bash_script in bash_list:
