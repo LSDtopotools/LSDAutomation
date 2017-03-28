@@ -376,6 +376,7 @@ def CloneMakeChiMudd(the_base_directory):
     makefile_list.append("chi_step2_write_channel_file.make")
     makefile_list.append("chi_get_profiles.make")
     makefile_list.append("chi_m_over_n_analysis.make")
+    makefile_list.append("chi_mapping_tool.make")
     
     # Loop through the makefile list, calling make as you go using a subprocess
     for target_makefile in makefile_list:
@@ -392,9 +393,72 @@ def CloneMakeChiMudd(the_base_directory):
         # Call make via subprocess
         subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
     
-    print("I've compiled everything you need to run the Mudd et al 2014 JGR-ES analyses!\n\n")
+    print("I've compiled everything you need to run the Mudd et al 2014 JGR-ES analyses!\n")
+    print("I've also compiled the chi mapping tool so you can get chi and chi slope for entire landscapes!\n\n")
     #print "Note if make said it didn't have anything to do it means you already compiled the program."       
 #=============================================================================   
+
+#=============================================================================
+# This function clones and makes the programs for the analysis in Mudd et al 2014 JGR-ES
+#=============================================================================
+def CloneMakeTerraceFloodplain(the_base_directory):
+    git = "git"
+    clone = "clone"
+    pull = "pull"
+    origin = "origin"
+    master = "master"
+    
+    # The below logic checks to see if the repo exist. If not it clones, if so it pulls, both using a 
+    # subprocess call to git
+    print("I am going to check if the repository exists.")
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/LSDRaster.cpp"
+    if not os.path.isfile(file):
+        print("I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_TerraceExtraction repo.")
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_TerraceExtraction.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction"
+        subprocess.call([git,clone,repo_address,target_directory])
+    else:
+        print("The repo with " + file+ " exists. I am updating.")
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/.git"
+        subprocess.call([git,git_worktree,git_dir,pull,origin,master])    
+        
+    print("I've got the repository. Now I am going to make the program for you.")
+    print("+++I AM AFRAID THIS DOESN'T WORK AT THE MOMENT!\n")
+    cmake = "cmake"
+    bash = "bash"
+    LSDTTpath = "LSDTopoTools/Git_projects/"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_TerraceExtraction/driver_functions_TerraceExtraction/"
+    
+    # get the current directory
+    cwd = os.getcwd()
+    
+    # Get the list of makefiles
+    bash_list = []
+    bash_list.append("compile.sh")
+    
+    # Loop through the makefile list, calling make as you go using a subprocess
+    for target_bash_script in bash_list:
+        
+        print("I am making using the bash script: "+target_bash_script)
+        os.chdir(target_path)
+        target = target_bash_script
+        
+        # Check to see if the makefile is here
+        if not os.path.isfile(target):
+            print("The bash script doesn't exist. Check your filenames and paths.")
+        else:
+            print("Bash script is here, lets try to run it!")
+        
+        # Call make via subprocess
+        subprocess.call([bash,target])
+        
+        os.chdir(cwd)
+    
+    print("If this were working you would have the code now, but it isn't. Too bad so sad.\n\n")
+    #print "Note if make said it didn't have anything to do it means you already compiled the program."       
+#=============================================================================   
+
 
 #=============================================================================
 # This is the main function that drives all cloning and directory creation
@@ -554,8 +618,14 @@ def main(argv):
                         help="If this is True, installs programs needed for Mudd et al. 2014 JGR-ES analyses. Note that the chi tool is installed by default.") 
     parser.add_argument("-CE", "--install_ChannelExtraction",metavar='True or False',type=bool, default=False, 
                         help="If this is True, installs programs needed for channel extraction.\nIMPORTANT: you need FFTW installed for this to work! On Ubuntu you can install with sudo apt-get install libfftw3-dev") 
+    parser.add_argument("-FT", "--install_floodplains_terraces",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, installs programs needed for terrace and floodplain extraction.")   
+    parser.add_argument("-sd", "--skip_default",metavar='True or False',type=bool, default=False, 
+                        help="If this is True, this skips cloning and compiling the defualt directories.")     
     parser.add_argument("-cp", "--check_paramfiles",metavar='True or False',type=bool, default=False, 
                         help="If this is True, the pathnames of the parameter files are checked and changed if the pathnames do not correspond to the the base path.") 
+  
+    
     args = parser.parse_args()
 
     # Get the base directory of the installation
@@ -566,11 +636,15 @@ def main(argv):
         the_base_directory = GetBaseDirectory(False) 
         
     # Install or update the default repositories
-    LSDTopoToolsDefault(the_base_directory)
+    if args.skip_default:
+        print("I am skipping default installations and just compiling the optional packages.\n")
+    else:
+        LSDTopoToolsDefault(the_base_directory)
     
     # Check to ensure paths in the test data are correct
     if args.check_paramfiles:
         #CheckPathsInParamfiles(the_base_directory)
+        print("I am making sure that the path in your parameter files are correct.")
         ParamFileChecker(the_base_directory)
     
     
@@ -582,7 +656,9 @@ def main(argv):
     if args.install_MuddChi2014:
         CloneMakeChiMudd(the_base_directory)          
     if args.install_ChannelExtraction:
-        CloneMakeChannelExtraction(the_base_directory)        
+        CloneMakeChannelExtraction(the_base_directory) 
+    if args.install_floodplains_terraces:
+        CloneMakeTerraceFloodplain(the_base_directory) 
     args = parser.parse_args() 
 #=============================================================================
     
