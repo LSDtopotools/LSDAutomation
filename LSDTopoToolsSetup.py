@@ -433,23 +433,23 @@ def CloneMakeTerraceFloodplain(the_base_directory):
     # The below logic checks to see if the repo exist. If not it clones, if so it pulls, both using a
     # subprocess call to git
     print("I am going to check if the repository exists.")
-    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/LSDRaster.cpp"
+    file = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_FloodplainTerraceExtraction/LSDRaster.cpp"
     if not os.path.isfile(file):
-        print("I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_TerraceExtraction repo.")
-        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_TerraceExtraction.git"
-        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction"
+        print("I don't see the LSDraster.cpp. I am going to try cloning the LSDTopoTools_FloodplainTerraceExtraction repo.")
+        repo_address = "https://github.com/LSDtopotools/LSDTopoTools_FloodplainTerraceExtraction.git"
+        target_directory = the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_FloodplainTerraceExtraction"
         subprocess.call([git,clone,repo_address,target_directory])
     else:
         print("The repo with " + file+ " exists. I am updating.")
-        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/"
-        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_TerraceExtraction/.git"
+        git_worktree = "--work-tree="+the_base_directory+"LSDTopoTools/Git_projects/LSDTopoTools_FloodplainTerraceExtraction/"
+        git_dir = "--git-dir="+the_base_directory+"/LSDTopoTools/Git_projects/LSDTopoTools_FloodplainTerraceExtraction/.git"
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])
 
     print("I've got the repository. Now I am going to make the programs for you.")
     #print("+++I AM AFRAID THIS DOESN'T WORK AT THE MOMENT!\n")
     bash = "bash"
     LSDTTpath = "LSDTopoTools/Git_projects/"
-    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_TerraceExtraction/driver_functions_TerraceExtraction/"
+    target_path = the_base_directory+LSDTTpath+"LSDTopoTools_FloodplainTerraceExtraction/driver_functions_Floodplains-Terraces/"
     make = "make"
     C_flag = "-C"
     f_flag = "-f"
@@ -495,7 +495,13 @@ def CloneMakeTerraceFloodplain(the_base_directory):
         # Call make via subprocess
         subprocess.call([make,C_flag,target_path,f_flag,target_makefile])
 
-    print("I've compiled your floodplain and terrace code. Happy terracing!\n\n")
+    # check if this worked
+    if not os.path.isfile(target_path+'get_terraces.out'):
+        print("I didn't manage to compile your terrace code, sorry :(")
+    if not os.path.isfile(target_path+'get_floodplains.out'):
+        print("I didn't manage to compile your floodplain code, sorry :(")
+    if os.path.isfile(target_path+'get_terraces.out') and os.path.isfile(target_path+'get_floodplains.out'):
+        print("I've compiled your floodplain and terrace code. Happy terracing!\n\n")
     #print "Note if make said it didn't have anything to do it means you already compiled the program."
 #=============================================================================
 
