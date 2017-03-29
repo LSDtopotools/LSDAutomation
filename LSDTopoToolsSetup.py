@@ -409,10 +409,13 @@ def CloneMakeTerraceFloodplain(the_base_directory):
     print("\n\n\n================================================")
     print("WARNING: Our terrace code requires something called PCL,")
     print("the Point Cloud Library. ")
-    print("PCL is a big package that has many dependencies. This will take a long time to install and will require a lot of hard disk space (~250Mb)!")
-    print("If you don't want to do this each time, you should modify your vagrantfile")
-    print("Just after the line:")
-    print("  config.vm.provision "shell", inline: <<-SHELL")
+    print("PCL is a big package that has many dependencies.")
+    print("If you are running this script for the first time, installation")
+    print("will take a long time to install and will require a lot of hard disk space (~250Mb)!")
+    print("You can also install PCL by modifying your vagrantfile,")
+    print("although this shouldn't be neccessary after you have run this script.")
+    print("For modifying the vagrantfile, just after the line:")
+    print("  config.vm.provision \"shell\", inline: <<-SHELL")
     print("replace the single sudo apt-get update line with these lines:")
     print("    sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/pcl")
     print("    sudo apt-get update")
@@ -464,7 +467,6 @@ def CloneMakeTerraceFloodplain(the_base_directory):
         subprocess.call([git,git_worktree,git_dir,pull,origin,master])
 
     print("I've got the repository. Now I am going to make the programs for you.")
-    #print("+++I AM AFRAID THIS DOESN'T WORK AT THE MOMENT!\n")
     bash = "bash"
     LSDTTpath = "LSDTopoTools/Git_projects/"
     target_path = the_base_directory+LSDTTpath+"LSDTopoTools_FloodplainTerraceExtraction/driver_functions_Floodplains-Terraces/"
