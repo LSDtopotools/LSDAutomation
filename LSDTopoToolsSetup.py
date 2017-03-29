@@ -405,6 +405,24 @@ def CloneMakeChiMudd(the_base_directory):
 #=============================================================================
 def CloneMakeTerraceFloodplain(the_base_directory):
 
+    # Some warning flags
+    print("\n\n\n================================================")
+    print("WARNING: Our terrace code requires something called PCL,")
+    print("the Point Cloud Library. ")
+    print("PCL is a big package that has many dependencies. This will take a long time to install and will require a lot of hard disk space (~250Mb)!")
+    print("If you don't want to do this each time, you should modify your vagrantfile")
+    print("Just after the line:")
+    print("  config.vm.provision "shell", inline: <<-SHELL")
+    print("replace the single sudo apt-get update line with these lines:")
+    print("    sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/pcl")
+    print("    sudo apt-get update")
+    print("    sudo apt-get install -y libpcl-all")
+    print("and then run vagrant provision. ")    
+    print("================================================\n\n\n")
+    
+    # Let the user digest this information
+    time.sleep(3)
+    
     # before we do anything we need to make sure that PCL and cmake are installed
     sudo = "sudo"
     aptget = "apt-get"
