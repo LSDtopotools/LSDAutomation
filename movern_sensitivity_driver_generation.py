@@ -80,7 +80,7 @@ def movern_sensitivty_driver_generation():
                     lines[6] = str(msl)+'\n'
                     lines[7] = str(sigma)+'\n'
                     lines[11]= str(tn)+'\n'
-                    lines[17]= str(skip)+'\n'
+                    lines[len(lines) -1]= str(skip)+'\n'
                     
                     print lines
                     
