@@ -71,4 +71,7 @@ def test_sigma_sensitivity(DataDirectory, DriverFileName, start_sigma=10, n_sigm
 if __name__ == "__main__":
     DataDirectory = '/home/s0923330/LSDTopoData/movern_analysis/kentucky_srtm/'
     DriverFileName = 'Kentucky_DEM.driver'
-    test_sigma_sensitivity(DataDirectory, DriverFileName)
+    start_sigma = 200
+    n_sigma = 9
+    d_sigma = 100
+    test_sigma_sensitivity(DataDirectory, DriverFileName, start_sigma, n_sigma, d_sigma)
