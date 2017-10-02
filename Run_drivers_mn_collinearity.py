@@ -14,8 +14,8 @@ import subprocess
 
 
 #DataDirectory =  "/home/smudd/papers/Rahul_Himalaya/Chi_analysis/Mandakini/Junction_76/"
-DataDirectory =  "/home/s0923330/DEMs_for_analysis/kentucky_srtm/"
-fname_prefix = 'Kentucky_DEM'
+DataDirectory =  "/home/s0923330/LSDTopoData/movern_analysis/sensitivity_analyses/muddpile_movern0p5_n_is_one/"
+fname_prefix = 'estimate_movern'
 
 print DataDirectory
 #subprocess.call(['ls',DataDirectory,'-l'])
