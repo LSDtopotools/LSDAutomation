@@ -14,7 +14,7 @@ import subprocess
 
 
 #DataDirectory =  "/home/smudd/papers/Rahul_Himalaya/Chi_analysis/Mandakini/Junction_76/"
-DataDirectory =  "/home/s0923330/LSDTopoData/movern_analysis/sensitivity_analyses/muddpile_movern0p5_n_is_one/"
+DataDirectory =  "/home/s0923330/LSDTopoData/movern_analysis/sensitivity_analyses/chi_all_data/muddpile_movern0p5_n_is_one/"
 fname_prefix = 'estimate_movern'
 
 print DataDirectory
