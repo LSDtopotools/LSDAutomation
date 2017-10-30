@@ -159,7 +159,7 @@ def CloneMakeAnalysisDriver(the_base_directory):
     LSDTTpath = "LSDTopoTools/Git_projects/"
     f_flag = "-f"
     target_path = the_base_directory+LSDTTpath+"LSDTopoTools_AnalysisDriver/Analysis_driver/"
-    target_makefile = "Drive_analysis_from_paramfile.make"
+    target_makefile = "LSDTT_BasicMetrics.make"
     target = target_path+target_makefile
 
     if not os.path.isfile(target):
