@@ -131,7 +131,7 @@ def ReadHeader(FileName):
 
 #==============================================================================
 
-def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax):
+def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax,data_dir,DEM_name,Header_name):
     """
     This function creates the string for a gdal coordinate transofrmation call. 
     It will be fed to a subprocess
@@ -142,12 +142,53 @@ def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax):
     Date: 10/11/2017
     """
     
-    start_string = "gdalwarp -t_srs \'+proj=utm +zone="
-    start_string = start_string+Zone+" +"+NorS+" +datum=WGS84\'"
-    start_string = start_string+ " -tr "+dx+" "+dy+" -r cubic"
+    start_string = "gdalwarp -t_srs"
     
-    print("The start string is: "+ start_string)
-
+    projection_string = "+proj=utm +zone="
+    projection_string = projection_string+Zone+" +"+NorS+" +datum=WGS84"
+    print("The projection_string is: "+ projection_string)
+    
+    resample_string = "-tr "+dx+" "+dy+" -r cubic"
+    
+   
+    # Now add the extents and format
+    extent_string = "-te "+XLL+" "+YLL+" "+Xmax+" "+Ymax+" -of ENVI"
+    print("Extent string is: ")
+    print(extent_string)
+    
+    # combine these into a list
+    start_list = start_string.split(" ")
+    resample_list = resample_string.split(" ")
+    extent_list = extent_string.split(" ")
+    
+    full_list = start_list
+    full_list.append(projection_string)
+    full_list = full_list+resample_list
+    full_list = full_list+extent_list
+    
+    full_list.append(DEM_name)
+    
+    # Now update the output name
+    header_list = Header_name.split(os.sep)
+    this_header = header_list[-1]
+    print("This header is: "+this_header)
+    
+    this_header = this_header.split(".")[0]
+    
+    New_fname = this_header
+    New_fname = New_fname+"_Clip.bil"
+    print("The new filename is: ")
+    print(New_fname)
+    
+    new_full_file = data_dir+New_fname
+    full_list.append(new_full_file)
+    
+    
+    print("The full list is")
+    print(full_list)
+    
+    return full_list
+#=============================================================================    
     
     
 
@@ -196,10 +237,17 @@ def main(argv):
     if not args.DEM_name:
         print("You didn't give me a DEM name. Im afraid I need a DEM and am exiting. Please provide one next time.")
         sys.exit()
+    else:
+        this_DEM = this_dir+args.DEM_name
         
     # Now process the header file
     NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax = ReadHeader(these_headers[0])
-    CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax)
+    system_call_list = CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax, this_dir, this_DEM, these_headers[0])
+    
+    # now call GDAL
+    print("I am going to call GDAL.")
+    print("You need to have GDAL the gdal command line tools installed for this to work!")
+    subprocess.call(system_call_list)
      
 #=============================================================================
 if __name__ == "__main__":
