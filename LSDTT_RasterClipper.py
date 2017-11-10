@@ -104,34 +104,34 @@ def ReadHeader(FileName):
             print("I didn't find the map info string. ")
         else:
             MI_string = MI_string.split(",")
-            XLL = str(MI_string[3].replace(" ", ""))
-            YLL = str(MI_string[4].replace(" ", ""))
+            Xmin = str(MI_string[3].replace(" ", ""))
+            Ymax = str(MI_string[4].replace(" ", ""))
             NorS = str(MI_string[8].replace(" ", ""))
             Zone = str(MI_string[7].replace(" ", ""))
             dx = str(MI_string[5].replace(" ", ""))
             dy = str(MI_string[6].replace(" ", ""))
             
             # now get the upper extents
-            f_XLL = float(XLL)
-            f_YLL = float(YLL)
+            f_Xmin = float(Xmin)
+            f_Ymax = float(Ymax)
             f_dx = float(dx)
             f_dy = float(dy)
             
             # Add a bit extra to ensure we get the final row and column
-            XUR = f_XLL+ NCols*f_dx+f_dx*0.001
-            YUR = f_YLL+NRows*f_dy+ f_dy*0.001
+            XLR = f_Xmin + NCols*f_dx + f_dx*0.001
+            YLR = f_Ymax - NRows*f_dy - f_dy*0.001
             
-            Xmax = str(XUR)
-            Ymax = str(YUR)
+            Xmax = str(XLR)
+            Ymin = str(YLR)
         
         print("Here are the vitalstatistix: ")
-        print([NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax])
-        return NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax
+        print([NRows,NCols,Xmin,Ymin,Xmax,Ymax,NorS,Zone,dx,dy])
+        return NRows,NCols,Xmin,Ymin,Xmax,Ymax,NorS,Zone,dx,dy
             
 
 #==============================================================================
 
-def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax,data_dir,DEM_name,Header_name):
+def CreateTransformCall(NRows,NCols,Xmin,Ymin,Xmax,Ymax,NorS,Zone,dx,dy,data_dir,DEM_name,Header_name):
     """
     This function creates the string for a gdal coordinate transofrmation call. 
     It will be fed to a subprocess
@@ -152,7 +152,7 @@ def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax,data_dir,D
     
    
     # Now add the extents and format
-    extent_string = "-te "+XLL+" "+YLL+" "+Xmax+" "+Ymax+" -of ENVI"
+    extent_string = "-te "+Xmin+" "+Ymin+" "+Xmax+" "+Ymax+" -of ENVI"
     print("Extent string is: ")
     print(extent_string)
     
