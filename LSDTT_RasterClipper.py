@@ -104,12 +104,12 @@ def ReadHeader(FileName):
             print("I didn't find the map info string. ")
         else:
             MI_string = MI_string.split(",")
-            XLL = MI_string[3]
-            YLL = MI_string[4]
-            NorS = MI_string[8]
-            Zone = MI_string[7]
-            dx = MI_string[5]
-            dy = MI_string[6]
+            XLL = str(MI_string[3].replace(" ", ""))
+            YLL = str(MI_string[4].replace(" ", ""))
+            NorS = str(MI_string[8].replace(" ", ""))
+            Zone = str(MI_string[7].replace(" ", ""))
+            dx = str(MI_string[5].replace(" ", ""))
+            dy = str(MI_string[6].replace(" ", ""))
             
             # now get the upper extents
             f_XLL = float(XLL)
@@ -141,6 +141,14 @@ def CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax):
     Author: SMM
     Date: 10/11/2017
     """
+    
+    start_string = "gdalwarp -t_srs \'+proj=utm +zone="
+    start_string = start_string+Zone+" +"+NorS+" +datum=WGS84\'"
+    start_string = start_string+ " -tr "+dx+" "+dy+" -r cubic"
+    
+    print("The start string is: "+ start_string)
+
+    
     
 
 
@@ -191,6 +199,7 @@ def main(argv):
         
     # Now process the header file
     NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax = ReadHeader(these_headers[0])
+    CreateTransformCall(NRows,NCols,XLL,YLL,NorS,Zone,dx,dy,Xmax,Ymax)
      
 #=============================================================================
 if __name__ == "__main__":
