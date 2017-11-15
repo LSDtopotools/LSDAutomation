@@ -167,13 +167,10 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 1, paddy_l
 		if(remove_old_files):
 			os.remove(fpath+fname+'.bil') # Removing the bil file
 			os.remove(fpath+fname+'.hdr') # Removing the header file
-			os.rename(fpath+fname+"_Spawned_0.bil",fpath+fname+".bil")
-			os.rename(fpath+fname+"_Spawned_0.hdr",fpath+fname+".hdr")
+			os.rename(fpath+fname+"_Spawned_0.bil",fpath+fname+".bil") # Renaming the older file
+			os.rename(fpath+fname+"_Spawned_0.hdr",fpath+fname+".hdr") # Renaming the older file
 
-
-
-
-
-
-
+	if(return_iguanodon):
+		IG = Iguanodon31(fpath, fprefix, writing_path = fpath, writing_prefix = fprefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = temp_info[2], south = south)
+		return IG
 
