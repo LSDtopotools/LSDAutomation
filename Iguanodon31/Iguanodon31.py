@@ -99,9 +99,9 @@ class Iguanodon31:
 		file.write('read fname: %s \n'%(self.rprefix))
 		file.write('write fname: %s \n'%(self.wprefix))
 		file.write(" \n")
-		file.write('write hillshade: %s \n'%(topo.lower()))#
-		file.write('write slope: %s \n'%(slope.lower()))
-		file.write('write curvature: %s \n'%(curvature.lower()))
+		file.write('write hillshade: %s \n'%(topo))#
+		file.write('write slope: %s \n'%(slope))
+		file.write('write curvature: %s \n'%(curvature))
 		file.write(" \n")
 		file.close()
 		# done with writing the parameter file
@@ -447,8 +447,8 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 				latitude_col = i
 
 		for line in file.readlines():
-			temp = file.readline().split(",")
-			this_IG = Iguanodon31(csv_path+'/'+temp[prefix]+"/", temp[prefix], data_source = 'ready', preprocessing_raster = False)
+			temp = line.rstrip().split(",")
+			this_IG = Iguanodon31(csv_path+'/'+temp[prefix_col]+"/", temp[prefix_col], data_source = 'ready', preprocessing_raster = False)
 			list_of_files.append(this_IG)
 
 
@@ -458,7 +458,7 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 		Iguanodons.ksn_calculation(print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
 		Iguanodons.movern_calculation(n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
 		Iguanodons.knickpoint_calculation(print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
-		Iguanodon.basics_metric()
+		Iguanodons.basics_metric()
 	print("I am done")
 
 
