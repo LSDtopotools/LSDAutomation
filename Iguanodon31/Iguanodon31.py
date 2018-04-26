@@ -18,7 +18,7 @@ class Iguanodon31:
 			self.wpath = writing_path
 			if(self.wpath[-1] != '/'):
 				self.wpath += '/'
-
+    
 		else:
 			print("I am sorry, for buggy reasons at the moments, I am forcing your writing path to be the same as your reading path. Apologies.")
 			self.wpath = self.rpath
@@ -115,19 +115,19 @@ class Iguanodon31:
 			plotting_command = "python %sPlotBasicRaster.py -dir %s -fname %s -t %s -S %s -C %s" %(self.LSDMT_path,self.wpath,self.wprefix, topo, slope, curvature)
 			sub.call(plotting_command, shell = True)
 
-	def chi_mapping_tool_full(self,minimum_elevation = 0, maximum_elevation = 30000, min_slope_for_fill = 0.0001, raster_is_filled = False, remove_seas = True
-,only_check_parameters = False,print_raster_without_seas= False, CHeads_file = 'NULL', threshold_contributing_pixels = 1000,minimum_basin_size_pixels = 5000, maximum_basin_size_pixels = 500000, test_drainage_boundaries = True, 
+	def chi_mapping_tool_full(self,print_litho_info,litho_raster,minimum_elevation = 0, maximum_elevation = 30000, min_slope_for_fill = 0.0001, raster_is_filled = False, remove_seas = True
+,only_check_parameters = False,print_raster_without_seas= False, CHeads_file = 'NULL', threshold_contributing_pixels = 200,minimum_basin_size_pixels = 5000, maximum_basin_size_pixels = 8000, test_drainage_boundaries = True, 
 only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channel_to_node_before_receiver_junction = True,find_complete_basins_in_window = True, find_largest_complete_basins = False,
- print_basin_raster = False, convert_csv_to_geojson = False,print_stream_order_raster = False,print_channels_to_csv = False, print_junction_index_raster= False,print_junctions_to_csv =False,print_fill_raster = False,
+ print_basin_raster  = False, convert_csv_to_geojson = False,print_stream_order_raster = False,print_channels_to_csv = False, print_junction_index_raster= False,print_junctions_to_csv =False,print_fill_raster = False,
  print_DrainageArea_raster = False, write_hillshade = True,print_basic_M_chi_map_to_csv = False, ksn_knickpoint_analysis = False, A_0 = 1,m_over_n = 0.5,threshold_pixels_for_chi = 0, basic_Mchi_regression_nodes = 11,
   burn_raster_to_csv = False,burn_raster_prefix = 'NULL',burn_data_csv_column_header = 'burned_data', n_movern = 8, start_movern = 0.1, delta_movern = 0.1, only_use_mainstem_as_reference = True,calculate_MLE_collinearity = False,
  collinearity_MLE_sigma = 1000, print_profiles_fxn_movern_csv = False, calculate_MLE_collinearity_with_points = False, calculate_MLE_collinearity_with_points_MC = False, MC_point_fractions = 5, MC_point_iterations = 1000,
- max_MC_point_fraction = 0.5, movern_residuals_test = False, MCMC_movern_analysis = False, MCMC_movern_minimum = 0.05, MCMC_movern_maximum = 1.5, MCMC_chain_links = 5000, estimate_best_fit_movern = False,
+ max_MC_point_fraction = 0.5, movern_residuals_test = False, MCMC_movern_analysis = False, MCMC_movern_minimum = 0.05, MCMC_movern_maximum = 1.5, MCMC_chain_links = 5000, estimate_best_fit_movern = True,
  SA_vertical_interval = 20,log_A_bin_width = 0.1,print_slope_area_data = False, segment_slope_area_data = False, slope_area_minimum_segment_length = 3, bootstrap_SA_data =False, N_SA_bootstrap_iterations = 1000,
   SA_bootstrap_retain_node_prbability = 0.5,n_iterations = 20,minimum_segment_length = 10, maximum_segment_length = 100000, n_nodes_to_visit = 10, target_nodes = 80,skip = 2, sigma = 20,print_chi_coordinate_raster = False,
-   print_simple_chi_map_to_csv = False, print_chi_data_maps = False, print_simple_chi_map_with_basins_to_csv = False,print_segmented_M_chi_map_to_csv =False, print_source_keys = False,
+   print_simple_chi_map_to_csv = True, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv = True,print_segmented_M_chi_map_to_csv =True, print_source_keys = True,
    print_sources_to_csv = False, print_sources_to_raster =False, print_baselevel_keys = False, use_precipitation_raster_for_chi = False,  print_discharge_raster = False,print_chi_no_discharge = False,check_chi_maps = False,
-   precipitation_fname = "NULL", print_segments = False, print_segments_raster = False, print_litho_info = False,litho_raster = 'NULL'):
+   precipitation_fname = "NULL", print_segments = False, print_segments_raster = False):
 		"""
 		This function will manipulate the chi_mapping_tool.exe. I reccomend creating intermediate functions to control this massive function for specific purposes ex MuddChi_2014, Mudd_movern_2018, ...
 
@@ -244,6 +244,16 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 		chi_mapping_tool_command = "%sdriver_functions_MuddChi2014/chi_mapping_tool.exe %s %s" %(self.LSDTT_path, self.wpath, self.wprefix+"_Chiculations.param")
 		sub.call(chi_mapping_tool_command, shell = True)
 
+	def basin_extraction(self, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, print_basin_raster = True, remove_seas = False, threshold_contributing_pixels = 5000, estimate_best_fit_movern = False, print_channels_to_csv = True, write_hillshade = True):
+		"""
+			Provides a simple basin extraction tool.
+			Author: Calum Bradbury - 30/11/2017
+
+		"""
+
+		self.chi_mapping_tool_full(minimum_basin_size_pixels = minimum_basin_size_pixels, print_basin_raster = print_basin_raster, maximum_basin_size_pixels = maximum_basin_size_pixels, remove_seas = remove_seas, threshold_contributing_pixels = threshold_contributing_pixels, estimate_best_fit_movern = estimate_best_fit_movern, print_channels_to_csv = print_channels_to_csv, write_hillshade = write_hillshade)
+  
+    
 	def ksn_calculation(self,print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True):
 		"""
 			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
@@ -256,17 +266,25 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 			plotting_command = "python %sPlotKnickpointAnalysis.py -dir %s -fname %s -mcstd True -mcbk True" %(self.LSDMT_path,self.wpath,self.wprefix)
 			sub.call(plotting_command, shell = True)
 
-	def movern_calculation(self,n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True):
+	def chi_stats_only(self):
+		""""
+			Provides extraction of landscape chi stats only.
+			Author: Calum Bradbury - 07/03/2018
+		"""
+		self.chi_mapping_tool_full(print_litho_info=False,litho_raster=False,threshold_contributing_pixels = 1000, print_chi_coordinate_raster = True,print_simple_chi_map_to_csv = True, print_chi_data_maps = True, test_drainage_boundaries = True,estimate_best_fit_movern = False,write_hillshade = False,threshold_pixels_for_chi = 0,only_use_mainstem_as_reference = True)
+
+	def movern_calculation(self, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, print_segmented_M_chi_map_to_csv =False, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv =True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, only_take_largest_basin = True, write_hillshade = True, plot = True, minimum_elevation = 0, maximum_elevation= 30000):
 		"""
 			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
 			Author: Boris Gailleton - 16/11/2017
 
 		"""
 
-		self.chi_mapping_tool_full(n_movern = n_movern,start_movern = start_movern,delta_movern = delta_movern,estimate_best_fit_movern= True,print_basin_raster = print_basin_raster,minimum_basin_size_pixels = minimum_basin_size_pixels, maximum_basin_size_pixels = maximum_basin_size_pixels,threshold_contributing_pixels = threshold_contributing_pixels,write_hillshade = write_hillshade)
+		self.chi_mapping_tool_full(burn_raster_to_csv=burn_raster_to_csv,burn_raster_prefix=burn_raster_prefix, print_litho_info=print_litho_info, litho_raster=litho_raster, print_junctions_to_csv=print_junctions_to_csv, n_movern = n_movern,start_movern = start_movern,delta_movern = delta_movern,estimate_best_fit_movern= True,print_basin_raster = print_basin_raster,minimum_basin_size_pixels = minimum_basin_size_pixels, maximum_basin_size_pixels = maximum_basin_size_pixels,threshold_contributing_pixels = threshold_contributing_pixels,only_take_largest_basin=only_take_largest_basin,write_hillshade = write_hillshade, minimum_elevation = minimum_elevation, maximum_elevation = maximum_elevation)
 		if (plot):
 			plotting_command = "python %sPlotMOverNAnalysis.py -dir %s -fname %s -ALL True" %(self.LSDMT_path,self.wpath,self.wprefix)
-			sub.call(plotting_command, shell = True)
+			sub.call(plotting_command, shell = True)    
+    
 
 	def knickpoint_calculation(self,print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True):
 		"""
@@ -301,8 +319,9 @@ def OT_SRTM30_toLSDTT(fpath,fname, UTM_zone, out_full_name, reso = 30, south = F
 		conversion_command = "gdalwarp -t_srs '+proj=utm +zone=%s +datum=WGS84' -of ENVI -r cubic -tr %s %s %s %s" %(UTM_zone,reso,reso,fpath+fname, fpath+out_full_name)
 
 	conversion_process = sub.call(conversion_command,shell = True)
+	print("resolution is ",reso)
 
-def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 1, paddy_long = 2, get_main_basin = False, remove_old_files = True, return_iguanodon = False):
+def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = False, remove_old_files = True, return_iguanodon = False, return_extents = False, alos=False, SRTM90 = False):
 
 	# Calculation of the extents
 	xmin = lon - paddy_long
@@ -312,7 +331,90 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 1, paddy_l
 
 	if(xmin>=xmax or ymin>= ymax):
 		print("UNVALID PARAMETERS: the extend of the wanted raster are not valid. Check it.")
-	wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=SRTMGL1&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
+	#allows use of ALOS raster
+	if alos:
+		wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=AW3D30&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
+	if SRTM90:
+		wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=SRTMGL3&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
+	else:
+		wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=SRTMGL1&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
+	wget_process =  sub.call(wget_command, shell = True)
+	# Dealing with the conversion
+	temp_info = utm.from_latlon(lat,lon)
+	if(temp_info[3] in ['X','W','V','U','T','S','R','Q','P','N']):
+		south = False
+	else:
+		south = True
+	if SRTM90:
+		reso = 90
+	else:
+		reso = 30
+
+
+	OT_SRTM30_toLSDTT(fpath, fname,temp_info[2],fname+".bil",reso = reso, south = south)
+	if(return_extents):
+		return xmin,ymin,xmax,ymax
+	if remove_old_files:
+			os.remove(fpath+fname) # Removing the Tiff file
+	if(get_main_basin):
+		print('I got your raster, now I am trimming it with LSDTT')
+		print('Building the requested files:')
+		# writing the outlet file
+		csv = open(fpath+"outlet.csv", 'w')
+		csv.write("IDs,latitude,longitude\n")
+		csv.write("string,%s,%s\n"%(lat,lon))
+		csv.close()
+
+		# Writing the file
+		file = open(fpath+fname+"_trimming.param", 'w')
+		file.write('# This is a parameter file for the chi_mapping_tool \n')
+		file.write('# One day there will be documentation. \n')
+		file.write(" \n")
+		file.write('# These are parameters for the file i/o \n')
+		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
+		file.write('read path: %s \n'%(fpath))
+		file.write('write path: %s \n'%(fpath))
+		file.write('read fname: %s \n'%(fname))
+		file.write('write fname: %s \n'%(fname))
+		file.write(" \n")
+		file.write('get_basins_from_outlets: true \n')
+		file.write('spawn_basins_from_outlets: true \n')
+		file.write('basin_outlet_csv: outlet.csv \n')
+		file.write(" \n")
+		file.close()
+		# done with writing
+
+		# let's run the analysis
+		## need to read first the LSD folder
+		setup_file = open('config.config','r')
+		LSD_folder = setup_file.readline().rstrip()
+		setup_file.close()
+
+
+		lsdtt_pp = sub.call(LSD_folder+'Analysis_driver/basin_averager.out '+fpath + ' ' +fname + '_trimming.param',shell = True)
+		print("Done with basin spawning")
+
+		if(remove_old_files):
+			os.remove(fpath+fname+'.bil') # Removing the bil file
+			os.remove(fpath+fname+'.hdr') # Removing the header file
+			os.rename(fpath+fname+"_Spawned_0.bil",fpath+fname+".bil") # Renaming the older file
+			os.rename(fpath+fname+"_Spawned_0.hdr",fpath+fname+".hdr") # Renaming the older file
+
+	if(return_iguanodon):
+		IG = Iguanodon31(fpath, fname, writing_path = fpath, writing_prefix = fname, data_source = 'ready', preprocessing_raster = False, UTM_zone = temp_info[2], south = south)
+		return IG
+    
+def get_ALOS30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = False, remove_old_files = True, return_iguanodon = False):
+
+	# Calculation of the extents
+	xmin = lon - paddy_long
+	xmax = lon + paddy_long
+	ymin = lat - paddy_lat
+	ymax = lat + paddy_lat
+
+	if(xmin>=xmax or ymin>= ymax):
+		print("UNVALID PARAMETERS: the extend of the wanted raster are not valid. Check it.")
+	wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=ALOS&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
 	wget_process =  sub.call(wget_command, shell = True)
 	# Dealing with the conversion
 	temp_info = utm.from_latlon(lat,lon)
@@ -429,7 +531,7 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 			if not os.path.isdir(this_dict["path"]):
 				os.makedirs(this_dict["path"])
 
-			thisIG = get_SRTM30_from_point(this_dict["path"], this_dict["prefix"], lat = float(this_dict["lat"]), lon = float(this_dict["lon"]), paddy_lat = 1, paddy_long = 2, get_main_basin = True, remove_old_files = True, return_iguanodon = True)
+			thisIG = get_SRTM30_from_point(this_dict["path"], this_dict["prefix"], lat = float(this_dict["lat"]), lon = float(this_dict["lon"]), paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = True, remove_old_files = True, return_iguanodon = True)
 			list_of_files.append(thisIG)
 		file.close()
 
