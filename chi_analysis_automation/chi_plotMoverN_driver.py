@@ -239,7 +239,7 @@ if burn_raster_to_csv:
       csvWriter = csv.writer(stats_csv,delimiter=',')
       csvWriter.writerow(("Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
       "Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks",
-      "Complex lithology","outlet_elevation","basin_key"))
+      "Complex lithology","outlet_elevation","basin_key","Median_MOv",	"FirstQ_thr",	"Min_MOverN",	"Max_MOverN"))
 
     #try and add MN data to litho_elevation.csv
     with open(current_path+writing_prefix+"_basin_lithology.csv",'r') as csvfile:
