@@ -2,7 +2,7 @@
 # uses an AllBasins.csv file with source_name added to source data
 # all csv files must be in the same directory
 import csv
-#mport os
+import os
 import argparse
 import pandas as pd
 
@@ -13,6 +13,7 @@ import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument("-dir", "--base_directory", type=str, help="The base directory with the m/n analysis. If this isn't defined I'll assume it's the same as the current directory.")
 parser.add_argument("name",nargs='?')
+parser.add_argument("-no_summary", "--no_summary", type=bool, default = False, help="use if all AllBasin and MChiSegmented csvs are in same directory and no summary_AllBasins.csv is present.")
 inputs = parser.parse_args()
 
 if inputs.name:
@@ -45,8 +46,37 @@ with open(path+str(name)+'_output_AllBasinsInfo.csv', 'wb') as csvfile_B:
   #put relvant MChiSegmented column names here
   csvReader_B.writerow(('latitude','longitude','outlet_longitude','outlet_longitude','outlet_junction','basin_key'))
 
+#allows merging of csv files output by multiple runs of this script when a summary csv file is not present.
+#this creates a summary file following the same format.
+if inputs.no_summary:
+  with open(path+str(name)+'summary_AllBasins.csv','wb') as csvfile:
+    csvWriter = csv.writer(csvfile, delimiter = ',')
+    csvWriter.writerow(('latitude','longitude','outlet_longitude','outlet_longitude','outlet_junction','basin_key','source_name'))
+  for file in os.listdir(path):
+    if file.endswith("AllBasinsInfo.csv"):
+      print file
+      with open(path+file, 'r') as csvfile:
+        csvReader = csv.reader(csvfile, delimiter = ',')
+        
+        next(csvReader)
+        #stripping file string
+        file = file.replace('_AllBasinsInfo.csv','')
+        print file
+        
+        for row in csvReader:
+          row.append(file)
+          with open(path+str(name)+'summary_AllBasins.csv','a') as csvfile:
+            csvWriter = csv.writer(csvfile,delimiter = ',')
+            csvWriter.writerow((row))
+        
+    
+    
+  
+      
+
+
 #sorting summary_AllBasinsInfo csv by source name to maintain consistency in basin_key assigniment
-with open(path+str(name)+'summary_AllBasinsInfo.csv','r') as csvfile:
+with open(path+str(name)+'summary_AllBasins.csv','r') as csvfile:
   pandasDF = pd.read_csv(csvfile,delimiter=',')
   outputDF = pandasDF.sort_values(by=["source_name","basin_key"])
   outputDF.to_csv(path+name+"summary_sorted_AllBasinsInfo.csv", mode="w",header=True,index=False)
@@ -56,7 +86,7 @@ with open(path+str(name)+'_output_litho_elevation.csv','wb') as csvfile:
   csvWriter = csv.writer(csvfile,delimiter=',')
   csvWriter.writerow(("Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
   "Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks",
-  "Complex lithology","outlet_elevation","basin_key"))
+  "Complex lithology","outlet_elevation","basin_key", "Median_MOv",	"FirstQ_thr",	"Min_MOverN",	"Max_MOverN"))
 
   
 
