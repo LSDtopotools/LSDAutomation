@@ -37,6 +37,8 @@ parser.add_argument("print_litho_info",nargs='?',default="none")
 parser.add_argument("burn_raster_to_csv",nargs='?',default="none")
 parser.add_argument("mergeAllBasins",nargs='?',default="none")
 parser.add_argument("junctions",nargs='?',default="none")
+parser.add_argument("min_elevation",nargs='?',default="none")
+parser.add_argument("max_elevation",nargs='?',default="none")
 
 inputs = parser.parse_args()
 
@@ -50,6 +52,8 @@ print_litho_info = inputs.print_litho_info
 burn_raster_to_csv = inputs.burn_raster_to_csv   
 mergeAllBasins = inputs.mergeAllBasins 
 print_junctions_to_csv = inputs.junctions
+min_elevation = inputs.min_elevation
+max_elevation = inputs.max_elevation
 clipping_elevation = 250
 
 if not summary_directory:
@@ -73,7 +77,7 @@ print current_path, fname, writing_prefix, current_min, current_max
 
 #chi_analysis
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
-Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =True, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = True, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = 350)
+Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =True, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = True, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation)
 
 print "????",current_path,writing_prefix
 
