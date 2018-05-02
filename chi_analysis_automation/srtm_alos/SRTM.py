@@ -99,7 +99,7 @@ class SRTM:
         
   
 
-  def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000):
+  def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0):
     
     #if chi_stats_only:  
       
@@ -146,7 +146,7 @@ class SRTM:
       
       location = os.getcwd()
       
-      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,self.mergeAllBasins,self.junctions, min_elevation, max_elevation)
+      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,self.mergeAllBasins,self.junctions, min_elevation, max_elevation, plotting)
       sub.call(chi_plotMoverN_driver, shell = True)
       
       

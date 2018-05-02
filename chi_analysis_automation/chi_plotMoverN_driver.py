@@ -39,6 +39,7 @@ parser.add_argument("mergeAllBasins",nargs='?',default="none")
 parser.add_argument("junctions",nargs='?',default="none")
 parser.add_argument("min_elevation",nargs='?',default="none")
 parser.add_argument("max_elevation",nargs='?',default="none")
+parser.add_argument("plotting",nargs='?',default="none")
 
 inputs = parser.parse_args()
 
@@ -54,7 +55,42 @@ mergeAllBasins = inputs.mergeAllBasins
 print_junctions_to_csv = inputs.junctions
 min_elevation = inputs.min_elevation
 max_elevation = inputs.max_elevation
-clipping_elevation = 250
+
+
+#debugging passing of bool
+inputs.plotting = int(inputs.plotting)
+#plotting = False 
+
+if inputs.plotting == 0:
+  plotting = False
+if inputs.plotting == 1:
+  plotting = True
+
+  
+
+
+def parameterWriter(parameter):
+  fname_to_write = current_path+fname+"_input_chi_plotMoverN_driver.param"
+  with open(fname_to_write, 'a') as param:
+    write_param = param.write(parameter+'\n')
+
+#writing inputs to parameter file
+parameterWriter("current_path: "+current_path)
+parameterWriter("fname: "+fname)
+parameterWriter("writing_prefix: "+writing_prefix)
+parameterWriter("current_min: "+current_min)
+parameterWriter("current_max: "+current_max)
+parameterWriter("summary_directory: "+summary_directory)
+parameterWriter("print_litho_info: "+print_litho_info)
+parameterWriter("burn_raster_to_csv: "+burn_raster_to_csv)
+parameterWriter("mergeAllBasins: "+mergeAllBasins)
+parameterWriter("junctions: "+print_junctions_to_csv)
+parameterWriter("min_elevation: "+min_elevation)
+parameterWriter("max_elevation: "+max_elevation)
+parameterWriter("plotting: "+str(plotting))
+
+
+
 
 if not summary_directory:
   summary_directory = current_path
@@ -70,46 +106,42 @@ if burn_raster_to_csv:
 else:
   burn_raster_prefix = 'NULL'
 
-print print_litho_info, litho_raster, "tracker 413"
-print burn_raster_to_csv, burn_raster_prefix
-
-print current_path, fname, writing_prefix, current_min, current_max
-
 #chi_analysis
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
-Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =True, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = True, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation)
+Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation)
 
 print "????",current_path,writing_prefix
 
-#chi_plotting
-plotting_command = "python %sPlotMOverNAnalysis.py -dir %s -fname %s -ALL True" %(chi.LSDMT_path,current_path,writing_prefix)
-sub.call(plotting_command, shell = True)   
+if plotting:
+  #chi_plotting
+  plotting_command = "python %sPlotMOverNAnalysis.py -dir %s -fname %s -ALL True" %(chi.LSDMT_path,current_path,writing_prefix)
+  sub.call(plotting_command, shell = True)   
 
-##### Imports and merges M/N data to shapefiles for use in QGIS
+  ##### Imports and merges M/N data to shapefiles for use in QGIS
 
-#source data
-#path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/Himalayan_front/27.19_91.13_pankhabar-north_lakhiumpur_8/30000/'
-#fname = '830000_40000'
-#read into dataframes
+  #source data
+  #path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/Himalayan_front/27.19_91.13_pankhabar-north_lakhiumpur_8/30000/'
+  #fname = '830000_40000'
+  #read into dataframes
 
-df = gpd.read_file(current_path+writing_prefix+'_AllBasins.shp')
-df2 = pd.read_csv(current_path+writing_prefix+'_AllBasinsInfo.csv')
+  df = gpd.read_file(current_path+writing_prefix+'_AllBasins.shp')
+  df2 = pd.read_csv(current_path+writing_prefix+'_AllBasinsInfo.csv')
+  
+  #renaming column to allow merging with shapefile
+  df2.rename(columns={'outlet_junction':'ID'}, inplace=True)
 
-#renaming column to allow merging with shapefile
-df2.rename(columns={'outlet_junction':'ID'}, inplace=True)
+  #merging data by outlet_junction
+  new_df = df.merge(df2, on='ID')
 
-#merging data by outlet_junction
-new_df = df.merge(df2, on='ID')
+  #getting MonteCarlo M/N data for this directory
+  BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
+  PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
 
-#getting MonteCarlo M/N data for this directory
-BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
-PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+  #merging MonteCarlo M/N data by basin_key
+  new_df = new_df.merge(PointsDF, on='basin_key')
 
-#merging MonteCarlo M/N data by basin_key
-new_df = new_df.merge(PointsDF, on='basin_key')
-
-#exporting to shapefile
-new_df.to_file(summary_directory+writing_prefix)
+  #exporting to shapefile
+  new_df.to_file(summary_directory+writing_prefix)
   
 
 #moving data to summary directory
@@ -125,12 +157,13 @@ shutil.copy2(current_path+writing_prefix+'_hs.hdr', summary_directory+writing_pr
 #shutil.copy2(current_path+writing_prefix+'_AllBasins.shp', summary_directory+writing_prefix+'_AllBasins.shp')
 #shutil.copy2(current_path+writing_prefix+'_AllBasins.shx', summary_directory+writing_prefix+'_AllBasins.shx')
 
-shutil.copy2(current_path+'chi_plots/MLE_profiles.mp4', summary_directory+writing_prefix+'MLE_profiles.mp4')
+if plotting:
+  shutil.copy2(current_path+'chi_plots/MLE_profiles.mp4', summary_directory+writing_prefix+'MLE_profiles.mp4')
 
-shutil.copy2(current_path+'summary_plots/'+writing_prefix+'_movern_chi_points.png', summary_directory+writing_prefix+'_movern_chi_points.png')
-shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_chi_full.png', summary_directory+writing_prefix+'_basins_movern_chi_full.png')
-shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_chi_points.png', summary_directory+writing_prefix+'_basins_movern_chi_points.png')
-shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_SA.png', summary_directory+writing_prefix+'_basins_movern_SA.png')
+  shutil.copy2(current_path+'summary_plots/'+writing_prefix+'_movern_chi_points.png', summary_directory+writing_prefix+'_movern_chi_points.png')
+  shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_chi_full.png', summary_directory+writing_prefix+'_basins_movern_chi_full.png')
+  shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_chi_points.png', summary_directory+writing_prefix+'_basins_movern_chi_points.png')
+  shutil.copy2(current_path+'raster_plots/'+writing_prefix+'_basins_movern_SA.png', summary_directory+writing_prefix+'_basins_movern_SA.png')
 
 #moving MChiSegmented to summary directory. Appending summary AllBasinsInfo.csv
 if mergeAllBasins:
@@ -239,7 +272,7 @@ if burn_raster_to_csv:
       csvWriter = csv.writer(stats_csv,delimiter=',')
       csvWriter.writerow(("Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
       "Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks",
-      "Complex lithology","outlet_elevation","basin_key","Median_MOv",	"FirstQ_thr",	"Min_MOverN",	"Max_MOverN"))
+      "Complex lithology","outlet_elevation","basin_key"))
 
     #try and add MN data to litho_elevation.csv
     with open(current_path+writing_prefix+"_basin_lithology.csv",'r') as csvfile:
@@ -294,6 +327,7 @@ if burn_raster_to_csv:
 if burn_raster_to_csv:
   os.remove(current_path+'geology_'+fname+'.bil')
   os.remove(current_path+'geology_'+fname+'.hdr')
+  
   
 print "did this end????"
 

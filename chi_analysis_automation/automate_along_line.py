@@ -16,6 +16,7 @@ parser.add_argument("-SRTM90", "--SRTM90",nargs='?',type=bool,default=False)
 parser.add_argument("-mergeAllBasins", "--mergeAllBasins",nargs='?',type=bool,default=False)
 parser.add_argument("-junctions", "--junctions",nargs='?',type=bool,default=False)
 parser.add_argument("-burn_raster_to_csv", "--burn_raster_to_csv",nargs='?',type=bool,default=False)
+parser.add_argument("-plotting", "--plotting",nargs='?',type=bool,default=False)
 parser.add_argument("-min_elevation", "--min_elevation",nargs='?',type=int)
 parser.add_argument("-max_elevation", "--max_elevation",nargs='?',type=int)
 
@@ -27,6 +28,11 @@ mergeAllBasins = inputs.mergeAllBasins
 junctions = inputs.junctions
 burn_raster_to_csv = inputs.burn_raster_to_csv
 
+if not inputs.plotting:
+  plotting = 0
+if inputs.plotting:
+  plotting = 1
+
 #setting min and max elevations for chi analysis
 if inputs.min_elevation: 
   min_elevation = inputs.min_elevation
@@ -37,6 +43,7 @@ if inputs.max_elevation:
   max_elevation = inputs.max_elevation
 else:
   max_elevation = 30000
+
   
 
 paddy_long = 0.25
@@ -142,7 +149,7 @@ with open(path+write+'.csv','r') as csvfile:
      if not SRTM90:
       if not alos:
         instanceSRTM.getGeologyRaster(extents=extents)
-     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation)     
+     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting)     
 
 
 
