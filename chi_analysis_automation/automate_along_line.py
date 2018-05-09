@@ -46,7 +46,7 @@ else:
 
   
 
-paddy_long = 0.25
+paddy_long = 0.5
 
 
 path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/Himalayan_front/' 
@@ -143,12 +143,12 @@ with open(path+write+'.csv','r') as csvfile:
      
      instanceSRTM = SRTM(name = name, tile = tile, lat = lat, lon = lon, alos=alos, SRTM90=SRTM90, mergeAllBasins=mergeAllBasins, junctions=junctions, path=path)
      
-     extents = instanceSRTM.rasterFetcher(paddy_lat = 0.25, paddy_long = paddy_long) #returns extents in format xmin,ymin,xmax,ymax
+     extents = instanceSRTM.rasterFetcher(paddy_lat = 0.5, paddy_long = paddy_long) #returns extents in format xmin,ymin,xmax,ymax
      
      print extents
-     if not SRTM90:
-      if not alos:
-        instanceSRTM.getGeologyRaster(extents=extents)
+     #if not SRTM90:
+     if not alos:
+        instanceSRTM.getGeologyRaster(SRTM90=False,extents=extents)
      instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting)     
 
 
