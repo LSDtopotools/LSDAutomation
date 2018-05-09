@@ -83,7 +83,7 @@ class SRTM:
   #  file.to_csv(path+name+'.csv', index=False)
   #  del file
   
-  def getGeologyRaster(self,extents = [],): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
+  def getGeologyRaster(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
     geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system
     geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
     ds = gdal.Open(self.summary_directory+self.fname+'.bil')
@@ -95,7 +95,10 @@ class SRTM:
     os.system(('ogr2ogr -f "ESRI Shapefile" %s.shp %s -clipsrc %s %s %s %s') %(self.summary_directory+self.fname,geology,extents[0],extents[1],extents[2],extents[3])) #This takes a lot of time as it's a big shapefile
     #transform crs and rasterize
     os.system('ogr2ogr -t_srs'+" '"+ds+"' "+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'.shp')
-    os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+    if SRTM90:
+      os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+    else:
+      os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
         
   
 
