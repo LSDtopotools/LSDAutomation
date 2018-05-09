@@ -307,6 +307,22 @@ if burn_raster_to_csv:
             
     
   statsWriter(current_path,writing_prefix)
+  
+  #adding burned csv data to mchi_segmented. CAUTION!!!  rounding lat long to 4 d.p.
+  with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as chi:
+    pandasChi = pd.read_csv(chi, delimiter = ',')
+    burned_data = pandasChi[["burned_data","latitude","longitude"]]
+    burned_data[["latitude","longitude"]] = burned_data[["latitude","longitude"]].round(4)
+    #print burned_data  
+    with open(current_path+writing_prefix+'_MChiSegmented.csv','r') as mchi:
+      pandasMChi = pd.read_csv(mchi, delimiter = ',')
+      pandasMChi[["latitude","longitude"]] = pandasMChi[["latitude","longitude"]].round(4)
+      burned_data = burned_data.merge(pandasMChi,on=["latitude","longitude"])
+      #print pandasMChi
+      #print burned_data
+      burned_data.to_csv(current_path+writing_prefix+'_MChiSegmented_burn.csv', mode = "w", header = True, index = False)
+      
+  
   #adding MN data to litho_elevation.csv
   with open(current_path+writing_prefix+'_litho_elevation.csv','r') as file:
     BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
