@@ -19,6 +19,8 @@ parser.add_argument("-burn_raster_to_csv", "--burn_raster_to_csv",nargs='?',type
 parser.add_argument("-plotting", "--plotting",nargs='?',type=bool,default=False)
 parser.add_argument("-min_elevation", "--min_elevation",nargs='?',type=int)
 parser.add_argument("-max_elevation", "--max_elevation",nargs='?',type=int)
+parser.add_argument("-geology", "--geology", nargs='?', type = bool, default=False)
+parser.add_argument("-TRMM", "--TRMM", nargs='?', type = bool, default=False)
 
 inputs = parser.parse_args()
 csv_name = inputs.csv_name
@@ -27,6 +29,8 @@ SRTM90 = inputs.SRTM90
 mergeAllBasins = inputs.mergeAllBasins
 junctions = inputs.junctions
 burn_raster_to_csv = inputs.burn_raster_to_csv
+geology = inputs.geology
+TRMM = inputs.TRMM
 
 if not inputs.plotting:
   plotting = 0
@@ -145,10 +149,12 @@ with open(path+write+'.csv','r') as csvfile:
      
      extents = instanceSRTM.rasterFetcher(paddy_lat = 0.5, paddy_long = paddy_long) #returns extents in format xmin,ymin,xmax,ymax
      
-     print extents
+     print 'SRTM90 is:...', SRTM90
      #if not SRTM90:
-     if not alos:
-        instanceSRTM.getGeologyRaster(SRTM90=False,extents=extents)
+     if geology:
+        instanceSRTM.getGeologyRaster(SRTM90=SRTM90,extents=extents)
+     if TRMM:
+        instanceSRTM.getTRMM(SRTM90=SRTM90,extents=extents)
      instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting)     
 
 

@@ -6,6 +6,7 @@ import shutil
 import pandas
 import gdal
 import osr
+import utm
 
 #LSDTopoTools specific imports
 #Loading the LSDTT setup configuration
@@ -99,7 +100,40 @@ class SRTM:
       os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
     else:
       os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+
+  def getTRMM(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
+    
+    #converting extents to UTM
+    bottom_corner = utm.from_latlon(extents[1],extents[0])
+    top_corner = utm.from_latlon(extents[3],extents[2])
+    extent_utm = [bottom_corner[0],bottom_corner[1],top_corner[0],top_corner[1]]
+    
+    
+    #source of the TRMM dataset
+    TRMM = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/trmm2b31_annual_mm_per_year.tif' 
+    ds = gdal.Open(self.summary_directory+self.fname+'.bil')
         
+    #getting target srs from current DEM
+    ds = ds.GetProjection()
+    ds = osr.SpatialReference(ds)
+    ds = ds.ExportToProj4()
+    
+    #generating cutline
+    cutline = "gdaltindex %s_index.shp %s.bil" %(self.summary_directory+self.fname, self.summary_directory+self.fname)
+    os.system(cutline)
+    
+    #clipping raster, reprojecting, and setting resolution
+    res_90 = "gdalwarp -of ENVI -tr 90 90 -ot Float64 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te_srs '"+ds   +"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(extent_utm[0],extent_utm[1],extent_utm[2],extent_utm[3],TRMM,self.summary_directory,self.fname)
+    #print res_90
+    res_30 = "gdalwarp -of ENVI -tr 30 30 -ot Float64 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te_srs '"+ds   +"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(extent_utm[0],extent_utm[1],extent_utm[2],extent_utm[3],TRMM,self.summary_directory,self.fname)
+    
+    print 'srtm 90  is ...s...', SRTM90
+    if SRTM90:
+      os.system(res_90)
+      print res_90
+    else:
+      os.system(res_30) 
+      print res_30       
   
 
   def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0):
@@ -108,7 +142,7 @@ class SRTM:
       
       #setting write directory
       #current_path = self.path+'/'+str(self.tile)+'/'
-      #if not os.path.exists(current_path):
+      #if not os.path.exists(current_path):                                                                                               
       #  os.makedirs(current_path)
       
       #getting required dems from summary directory 
