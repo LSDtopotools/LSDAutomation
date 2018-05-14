@@ -10,7 +10,7 @@ import argparse
 #getting csv name
 parser = argparse.ArgumentParser()
 parser.add_argument("csv_name",nargs='?',default="none")
-#CAUTION: as I don't understand parsing boolean values very well, the following will evaluate to true for any input under flag -alos
+#CAUTION: as I don't understand parsing boolean values very well, the following will evaluate to true for any input deflag -alos
 parser.add_argument("-alos", "--alos",nargs='?',type=bool,default=False)
 parser.add_argument("-SRTM90", "--SRTM90",nargs='?',type=bool,default=False)
 parser.add_argument("-mergeAllBasins", "--mergeAllBasins",nargs='?',type=bool,default=False)
@@ -155,7 +155,7 @@ with open(path+write+'.csv','r') as csvfile:
         instanceSRTM.getGeologyRaster(SRTM90=SRTM90,extents=extents)
      if TRMM:
         instanceSRTM.getTRMM(SRTM90=SRTM90,extents=extents)
-     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting)     
+     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting, geology=geology, TRMM=TRMM)     
 
 
 

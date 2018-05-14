@@ -104,9 +104,9 @@ class SRTM:
   def getTRMM(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
     
     #converting extents to UTM
-    bottom_corner = utm.from_latlon(extents[1],extents[0])
-    top_corner = utm.from_latlon(extents[3],extents[2])
-    extent_utm = [bottom_corner[0],bottom_corner[1],top_corner[0],top_corner[1]]
+    #bottom_corner = utm.from_latlon(extents[1],extents[0])
+    #top_corner = utm.from_latlon(extents[3],extents[2])
+    #extent_utm = [bottom_corner[0],bottom_corner[1],top_corner[0],top_corner[1]]
     
     
     #source of the TRMM dataset
@@ -123,9 +123,9 @@ class SRTM:
     os.system(cutline)
     
     #clipping raster, reprojecting, and setting resolution
-    res_90 = "gdalwarp -of ENVI -tr 90 90 -ot Float64 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te_srs '"+ds   +"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(extent_utm[0],extent_utm[1],extent_utm[2],extent_utm[3],TRMM,self.summary_directory,self.fname)
+    res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     #print res_90
-    res_30 = "gdalwarp -of ENVI -tr 30 30 -ot Float64 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te_srs '"+ds   +"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(extent_utm[0],extent_utm[1],extent_utm[2],extent_utm[3],TRMM,self.summary_directory,self.fname)
+    res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     
     print 'srtm 90  is ...s...', SRTM90
     if SRTM90:
@@ -136,7 +136,7 @@ class SRTM:
       print res_30       
   
 
-  def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0):
+  def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, geology=False, TRMM=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0):
     
     #if chi_stats_only:  
       
@@ -183,7 +183,7 @@ class SRTM:
       
       location = os.getcwd()
       
-      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,self.mergeAllBasins,self.junctions, min_elevation, max_elevation, plotting)
+      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,geology,TRMM, self.mergeAllBasins,self.junctions, min_elevation, max_elevation, plotting)
       sub.call(chi_plotMoverN_driver, shell = True)
       
       
