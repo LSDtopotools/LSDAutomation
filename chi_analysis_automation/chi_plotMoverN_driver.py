@@ -184,7 +184,9 @@ if mergeAllBasins:
       d = row[3]
       e = row[4]
       f = row[5]
-      g = writing_prefix
+      #removing the "_currentmax" part from string, part of debugging sorting basins for consistency.
+      to_replace = "_"+str(current_max) 
+      g = writing_prefix.replace(to_replace,"")
   
       #error management, hopefully will reduce/eliminate IOErrors
       try:
