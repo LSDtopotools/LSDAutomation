@@ -184,20 +184,21 @@ if mergeAllBasins:
       d = row[3]
       e = row[4]
       f = row[5]
+      g = writing_prefix
       #removing the "_currentmax" part from string, part of debugging sorting basins for consistency.
       to_replace = "_"+str(current_max) 
-      g = writing_prefix.replace(to_replace,"")
+      h = writing_prefix.replace(to_replace,"")
   
       #error management, hopefully will reduce/eliminate IOErrors
       try:
         with open(summary_directory+'summary_AllBasinsInfo.csv', 'a') as csvfile_B:
           csvWriter = csv.writer(csvfile_B, delimiter = ',')
-          csvWriter.writerow((a,b,c,d,e,f,g))
+          csvWriter.writerow((a,b,c,d,e,f,g,h))
       except IOError:
         sleep(5)
         with open(summary_directory+'summary_AllBasinsInfo.csv', 'a') as csvfile_B:
           csvWriter = csv.writer(csvfile_B, delimiter = ',')
-          csvWriter.writerow((a,b,c,d,e,f,g))        
+          csvWriter.writerow((a,b,c,d,e,f,g,h))        
 
 #removing duplicate dem files - DO NOT REMOVE, needed for PlotChiAnalysis.py
 #os.remove(current_path+writing_prefix+'_AllBasins.bil')
