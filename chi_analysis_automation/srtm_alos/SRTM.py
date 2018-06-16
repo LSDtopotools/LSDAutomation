@@ -85,7 +85,9 @@ class SRTM:
   #  del file
   
   def getGeologyRaster(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
-    geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system
+    #geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system
+    #using a modified version of glim dataset to handle all three levels of classification
+    geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya_full_key.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system    
     geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
     ds = gdal.Open(self.summary_directory+self.fname+'.bil')
     #getting target srs from current DEM
@@ -97,10 +99,11 @@ class SRTM:
     #transform crs and rasterize
     os.system('ogr2ogr -t_srs'+" '"+ds+"' "+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'.shp')
     if SRTM90:
-      os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')      
     else:
-      os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
-
+      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
   def getTRMM(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
     
     #converting extents to UTM
@@ -110,7 +113,7 @@ class SRTM:
     
     
     #source of the TRMM dataset
-    TRMM = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/trmm2b31_annual_mm_per_year.tif' 
+    TRMM = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/annual.tif' 
     ds = gdal.Open(self.summary_directory+self.fname+'.bil')
         
     #getting target srs from current DEM
@@ -136,7 +139,7 @@ class SRTM:
       print res_30       
   
 
-  def chiAnalysis (self, chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False, geology=False, TRMM=False, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0):
+  def chiAnalysis (self, chi_stats_only=False, print_litho_info=0, burn_raster_to_csv=0, geology=0, TRMM=0, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0, use_precipitation_raster_for_chi = 0):
     
     #if chi_stats_only:  
       
@@ -167,11 +170,15 @@ class SRTM:
         os.makedirs(current_path)
       
       #putting key into current directory
-      if print_litho_info or burn_raster_to_csv:
+      if print_litho_info == 1 or burn_raster_to_csv == 1:
         geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
         shutil.copy2(geology_key,current_path)
         shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.bil',current_path+'geology_'+self.fname+'.bil')
         shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.hdr',current_path+'geology_'+self.fname+'.hdr')
+      #moving prepitation raster. Althought this is the same as the TRMM data written using the burn csv function, it is handled separatly to avoid problems when using lithology.
+      if use_precipitation_raster_for_chi == 1: 
+        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.bil',current_path+'precipitation_'+self.fname+'.bil')
+        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.hdr',current_path+'precipitation_'+self.fname+'.hdr')      
       
       shutil.copy2(self.summary_directory+self.fname+'.bil', current_path)
       shutil.copy2(self.summary_directory+self.fname+'.hdr', current_path)
@@ -182,8 +189,10 @@ class SRTM:
       #Ig.Iguanodon31.movern_calculation(chi, n_movern, start_movern, delta_movern, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = contributing_pixels, only_take_largest_basin = False, write_hillshade = True, plot = False)
       
       location = os.getcwd()
+
+      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,geology,TRMM, self.mergeAllBasins,self.junctions, min_elevation, max_elevation, plotting, use_precipitation_raster_for_chi)
       
-      chi_plotMoverN_driver = "nohup nice python chi_plotMoverN_driver.py %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s&" %(current_path,name,writing_prefix,current_min,current_max,self.summary_directory,print_litho_info,burn_raster_to_csv,geology,TRMM, self.mergeAllBasins,self.junctions, min_elevation, max_elevation, plotting)
+      print chi_plotMoverN_driver
       sub.call(chi_plotMoverN_driver, shell = True)
       
       

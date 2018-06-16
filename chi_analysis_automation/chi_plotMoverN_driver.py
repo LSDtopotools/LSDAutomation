@@ -42,6 +42,8 @@ parser.add_argument("junctions",nargs='?',default="none")
 parser.add_argument("min_elevation",nargs='?',default="none")
 parser.add_argument("max_elevation",nargs='?',default="none")
 parser.add_argument("plotting",nargs='?',default="none")
+parser.add_argument("use_precipitation_raster_for_chi",nargs='?',default="none")
+
 
 inputs = parser.parse_args()
 
@@ -51,10 +53,33 @@ writing_prefix = inputs.writing_prefix
 current_min = inputs.current_min
 current_max = inputs.current_max
 summary_directory = inputs.summary_directory
-print_litho_info = inputs.print_litho_info
-burn_raster_to_csv = inputs.burn_raster_to_csv   
-geology = inputs.geology
-TRMM = inputs.TRMM
+#print_litho_info = inputs.print_litho_info
+#burn_raster_to_csv = inputs.burn_raster_to_csv   
+
+#chi_stats_only=False, print_litho_info=False, burn_raster_to_csv=False,
+
+if int(inputs.print_litho_info) == 1:
+  print_litho_info = True
+else:
+  print_litho_info = False
+
+if int(inputs.burn_raster_to_csv) == 1:
+  burn_raster_to_csv = True
+else:
+  burn_raster_to_csv = False
+
+
+if int(inputs.geology) == 1:
+  geology = True
+else:
+  geology = False
+
+if int(inputs.TRMM) == 1:
+  TRMM = True
+else:
+  TRMM = False
+
+
 mergeAllBasins = inputs.mergeAllBasins 
 print_junctions_to_csv = inputs.junctions
 min_elevation = inputs.min_elevation
@@ -70,6 +95,15 @@ if inputs.plotting == 0:
 if inputs.plotting == 1:
   plotting = True
 
+print inputs.use_precipitation_raster_for_chi
+inputs.use_precipitation_raster_for_chi = int(inputs.use_precipitation_raster_for_chi)
+#plotting = False 
+
+if inputs.use_precipitation_raster_for_chi == 0:
+  use_precipitation_raster_for_chi = False
+if inputs.use_precipitation_raster_for_chi == 1:
+  use_precipitation_raster_for_chi = True
+
   
 
 
@@ -79,21 +113,29 @@ def parameterWriter(parameter):
     write_param = param.write(parameter+'\n')
 
 #writing inputs to parameter file
-parameterWriter("current_path: "+current_path)
-parameterWriter("fname: "+fname)
-parameterWriter("writing_prefix: "+writing_prefix)
-parameterWriter("current_min: "+current_min)
-parameterWriter("current_max: "+current_max)
-parameterWriter("summary_directory: "+summary_directory)
-parameterWriter("print_litho_info: "+print_litho_info)
-parameterWriter("burn_raster_to_csv: "+burn_raster_to_csv)
-parameterWriter("mergeAllBasins: "+mergeAllBasins)
-parameterWriter("junctions: "+print_junctions_to_csv)
-parameterWriter("min_elevation: "+min_elevation)
-parameterWriter("max_elevation: "+max_elevation)
+parameterWriter("current_path: "+str(current_path))
+parameterWriter("fname: "+str(fname))
+parameterWriter("writing_prefix: "+str(writing_prefix))
+parameterWriter("current_min: "+str(current_min))
+parameterWriter("current_max: "+str(current_max))
+parameterWriter("summary_directory: "+str(summary_directory))
+parameterWriter("print_litho_info: "+str(print_litho_info))
+parameterWriter("burn_raster_to_csv: "+str(burn_raster_to_csv))
+parameterWriter("mergeAllBasins: "+str(mergeAllBasins))
+parameterWriter("junctions: "+str(print_junctions_to_csv))
+parameterWriter("min_elevation: "+str(min_elevation))
+parameterWriter("max_elevation: "+str(max_elevation))
 parameterWriter("plotting: "+str(plotting))
 parameterWriter("geology: "+str(geology))
 parameterWriter("TRMM: "+str(TRMM))
+parameterWriter("use_precipitation_raster_for_chi: "+str(use_precipitation_raster_for_chi))
+
+
+parameterWriter("inputs.print_litho_info: "+str(inputs.print_litho_info))
+parameterWriter("inputs.burn_raster_to_csv: "+str(inputs.burn_raster_to_csv))
+parameterWriter("inputs.plotting: "+str(inputs.plotting))
+parameterWriter("inputs.geology: "+str(inputs.geology))
+parameterWriter("inputs.TRMM: "+str(inputs.TRMM))
 
 
 
@@ -112,11 +154,47 @@ if burn_raster_to_csv:
 else:
   burn_raster_prefix = 'NULL'
 
+if use_precipitation_raster_for_chi:
+  precipitation_fname = 'precipitation_'+fname
+
 #chi_analysis
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
-Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation)
+Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation,use_precipitation_raster_for_chi=use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname)
 
 print "????",current_path,writing_prefix
+
+# renaming output files which contain Q
+def renameOutputs(in_name,out_name):
+  try:
+    shutil.move(current_path+writing_prefix+in_name+'.csv',current_path+writing_prefix+out_name+'.csv')  
+  except:
+    print 'Error in '+in_name+' to '+out_name+' conversion!'
+    
+if use_precipitation_raster_for_chi:
+  renameOutputs('_burned_movernQ','_burned_movern')
+  renameOutputs('_chi_data_mapQ','_chi_data_map')
+  renameOutputs('_chiQ_data_map_burned','_chi_data_map_burned')
+  renameOutputs('_MCpointQ_0.1_pointsMC_Q','_MCpoint_0.1_pointsMC')
+  renameOutputs('_MCpointQ_0.2_pointsMC_Q','_MCpoint_0.2_pointsMC')
+  renameOutputs('_MCpointQ_0.3_pointsMC_Q','_MCpoint_0.3_pointsMC')
+  renameOutputs('_MCpointQ_0.4_pointsMC_Q','_MCpoint_0.4_pointsMC')
+  renameOutputs('_MCpointQ_0.5_pointsMC_Q','_MCpoint_0.5_pointsMC')
+  renameOutputs('_MCpointQ_0.6_pointsMC_Q','_MCpoint_0.6_pointsMC')
+  renameOutputs('_MCpointQ_0.7_pointsMC_Q','_MCpoint_0.7_pointsMC')
+  renameOutputs('_MCpointQ_0.8_pointsMC_Q','_MCpoint_0.8_pointsMC')
+  renameOutputs('_MCpointQ_0.9_pointsMC_Q','_MCpoint_0.9_pointsMC')
+  renameOutputs('_MCpointQ_points_MC_basinstats_Q','_MCpoint_points_MC_basinstats')
+  renameOutputs('_movernstatsQ_0.1_fullstats','_movernstats_0.1_fullstats')
+  renameOutputs('_movernstatsQ_0.2_fullstats','_movernstats_0.2_fullstats')
+  renameOutputs('_movernstatsQ_0.3_fullstats','_movernstats_0.3_fullstats')
+  renameOutputs('_movernstatsQ_0.4_fullstats','_movernstats_0.4_fullstats')
+  renameOutputs('_movernstatsQ_0.5_fullstats','_movernstats_0.5_fullstats')
+  renameOutputs('_movernstatsQ_0.6_fullstats','_movernstats_0.6_fullstats')
+  renameOutputs('_movernstatsQ_0.7_fullstats','_movernstats_0.7_fullstats')
+  renameOutputs('_movernstatsQ_0.8_fullstats','_movernstats_0.8_fullstats')
+  renameOutputs('_movernstatsQ_0.9_fullstats','_movernstats_0.9_fullstats')
+  renameOutputs('_movernstatsQ_basinstats','_movernstats_basinstats')
+                               
 
 if plotting:
   #chi_plotting
@@ -174,6 +252,16 @@ if plotting:
 #moving MChiSegmented to summary directory. Appending summary AllBasinsInfo.csv
 if mergeAllBasins:
   shutil.copy2(current_path+writing_prefix+'_MChiSegmented.csv', summary_directory+writing_prefix+'_MChiSegmented.csv')
+  #moving disorder stats to allow merging, REMEMBER, merging is driven by the data_selection script as chi_mapping_tool processes must all be finished
+  try:
+    shutil.copy2(current_path+writing_prefix+'_disorder_basinstats.csv', summary_directory+writing_prefix+'_disorder_basinstats.csv')
+  except:
+    print "error, cannot find %s_disorder_basinstats"%(writing_prefix)
+  try:
+    shutil.copy2(current_path+writing_prefix+'_fullstats_disorder_uncert.csv', summary_directory+writing_prefix+'_fullstats_disorder_uncert.csv')
+  except:
+    print "error, cannot find %s_fullstats_disorder_uncert"%(writing_prefix)  
+  
   with open(current_path+writing_prefix+'_AllBasinsInfo.csv', 'r') as csvfile:
     csvReader = csv.reader(csvfile, delimiter =',')
     next(csvReader)
@@ -212,7 +300,7 @@ if mergeAllBasins:
 
 if burn_raster_to_csv:
     #adding burned csv data to mchi_segmented. CAUTION!!!  rounding lat long to 4 d.p.
-  if geology or TRMM:
+  if geology == 1 or TRMM == 1:
     
     with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as chi:
       pandasChi = pd.read_csv(chi, delimiter = ',')
@@ -229,15 +317,68 @@ if burn_raster_to_csv:
     
     shutil.copy(current_path+writing_prefix+'_MChiSegmented_burn.csv', summary_directory+writing_prefix+'_MChiSegmented_burn.csv')
   
+  if geology == 0:
   
+    if TRMM == 1:
+    
+    #creating csv with rainfall averaged over basin segments, and including MN data
+      with open(current_path+writing_prefix+"_basin_TRMM.csv","wb") as csvfile:
+        csvWriter = csv.writer(csvfile,delimiter=',')
+        csvWriter.writerow(("basin_key","mean annual rainfall (mm)"))
+
+      #opening source of climate data
+      with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as csvfile:
+        pandasDF = pd.read_csv(csvfile,delimiter=',')
+      
+        #opening basin directory
+        with open(current_path+writing_prefix+'_AllBasinsInfo.csv','r') as csvfile_2:
+          csvReader = csv.reader(csvfile_2,delimiter=',')
+          next(csvReader)
+        
+          for row in csvReader:
+            basin_number = int(row[5])
+            selected_DF = pandasDF.loc[pandasDF['basin_key'] == basin_number]
+            #getting burned data series for the basin
+            pandas_list = selected_DF['burned_data']
+            #print pandas_list
+            mean_rainfall = pandas_list.mean()
+      
+            with open(current_path+writing_prefix+'_basin_TRMM.csv', 'a') as csvfile_3:
+              csvWriter = csv.writer(csvfile_3,delimiter=',')
+              csvWriter.writerow((basin_number,mean_rainfall))
+    
+      with open(current_path+writing_prefix+'_basin_TRMM.csv','r') as file:
+        BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
+        PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+        pandasDF = pd.read_csv(file, delimiter = ',')
+        pandasDF = pandasDF.merge(PointsDF, on='basin_key')
+        pandasDF.to_csv(current_path+writing_prefix+'_basin_TRMM_MN.csv', mode="w",header=True,index=False)
+      
+      try:
+        shutil.copy(current_path+writing_prefix+"_basin_TRMM_MN.csv", summary_directory+writing_prefix+"_basin_TRMM.csv")
+      except:
+        print "failed moving TRMM stats to summary directory"
+      
   
-  if geology:
+  if geology == 1:
     #generating write file
-    with open(current_path+writing_prefix+'_basin_lithology.csv', 'wb') as csvfile:
-      csvWriter = csv.writer(csvfile,delimiter=',')
-      csvWriter.writerow(("basin","Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
-      "Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks","Complex lithology"))  
-  
+    #modification to accomodate variations in glim key
+    
+    
+    with open(current_path+"glim_lithokey.csv",'r') as csvfile:
+      csvReader = csv.reader(csvfile,delimiter=',')
+      key_list = []
+      key_list.append("basin")
+      next(csvReader)
+      for row in csvReader:
+        id = row[1]
+        key_list.append(id)
+      with open(current_path+writing_prefix+'_basin_lithology.csv', 'wb') as csvfile:
+        csvWriter = csv.writer(csvfile,delimiter=',')
+        #csvWriter.writerow(("basin","Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
+        #"Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks","Complex lithology"))  
+        csvWriter.writerow((key_list))
+        
     def lithCounter(basin_number,pandas_list):
       list = [basin_number]
       with open(current_path+"glim_lithokey.csv",'r') as csvfile:
@@ -298,11 +439,27 @@ if burn_raster_to_csv:
 
     def statsWriter(current_path,writing_prefix):
       #generating output file
+      #getting keys from glim_lithokey.csv
+      
+      with open(current_path+"glim_lithokey.csv",'r') as csvfile:
+        
+        csvReader = csv.reader(csvfile,delimiter=',')
+        key_list = []
+        next(csvReader)
+        
+        for row in csvReader:
+          id = row[1]
+          key_list.append(id)
+          
+        key_list.append("outlet_elevation")
+        key_list.append("basin_key")
+      
       with open(current_path+writing_prefix+"_litho_elevation.csv","wb") as stats_csv:
         csvWriter = csv.writer(stats_csv,delimiter=',')
-        csvWriter.writerow(("Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
-        "Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks",
-        "Complex lithology","outlet_elevation","basin_key"))
+        #csvWriter.writerow(("Evaporites","Ice and Glaciers","Metamorphics","No Data","Acid plutonic rocks","Basic plutonic rocks","Intermediate plutonic rocks","Pyroclastics","Carbonate sedimentary rocks",
+        #"Mixed sedimentary rocks","Siliciclastic sedimentary rocks","Unconsolidated sediments","Acid volcanic rocks","Basic volcanic rocks","Intermediate volcanic rocks","Water Bodies","Precambrian rocks",
+        #"Complex lithology","outlet_elevation","basin_key"))   
+        csvWriter.writerow((key_list))
 
       #try and add MN data to litho_elevation.csv
       with open(current_path+writing_prefix+"_basin_lithology.csv",'r') as csvfile:
@@ -341,7 +498,7 @@ if burn_raster_to_csv:
    
   
     #adding MN data to litho_elevation.csv
-  if geology:
+  if geology == 1:
     with open(current_path+writing_prefix+'_litho_elevation.csv','r') as file:
       BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
       PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
