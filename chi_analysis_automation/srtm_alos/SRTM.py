@@ -130,6 +130,13 @@ class SRTM:
     #print res_90
     res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     
+    #clipping dem by same extent to help debug segmentation problems
+    clip_dem = "gdalwarp -of ENVI -cutline %s -crop_to_cutline -overwrite %s.bil %s.bil" %(self.summary_directory+self.fname+'_index.shp',self.summary_directory+self.fname,self.summary_directory+self.fname)
+    os.system(clip_dem)
+    #forcing precipitation raster extents to dem extents
+    force = "gdal_translate -of ENVI -projwin ulx uly lrx lry %s.bil %s_LITHRAST.bil"%(self.summary_directory+self.fname,self.summary_directory+self.fname)
+    os.system(force)
+    
     print 'srtm 90  is ...s...', SRTM90
     if SRTM90:
       os.system(res_90)
