@@ -20,6 +20,8 @@ sys.path.append(LSDMT_PT)
 sys.path.append(LSDMT_MF)
 sys.path.append(Iguanodon)
 
+debug = False
+
 import Iguanodon31 as Ig
 
 class SRTM:
@@ -104,13 +106,44 @@ class SRTM:
     else:
       #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
       os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+  
+  
+
   def getTRMM(self,SRTM90,extents = []): #clips and rasterizes GLIM extents for current DEM. Saves to summary_directory
     
-    #converting extents to UTM
+    #a rather clumsy function for extracting the utm coordinates from the gdalinfo text file
+    def utmExtents(corner):
+      with open (self.summary_directory+self.fname+corner+".txt", "r") as text:
+        data = text.read().replace(',', '')
+        data = data.replace('(','')
+        data = data.replace(')','')
+        data = data.split()
+        coordinates = [data[2],data[3]]
+        return coordinates
+  
+    #converting extents is too inaccurate - avoid and stick to getting exact extents from gdalinfo
     #bottom_corner = utm.from_latlon(extents[1],extents[0])
     #top_corner = utm.from_latlon(extents[3],extents[2])
     #extent_utm = [bottom_corner[0],bottom_corner[1],top_corner[0],top_corner[1]]
     
+    #using grep to search for extent values in gdalinfo, I don't know how to directly asign to variable, so this uses an intermediatory text file
+    dem = self.summary_directory+self.fname+'.bil'
+    lower_left = "gdalinfo " + dem + " | grep 'Lower Left' >"+self.summary_directory+self.fname+"_lower_left.txt"
+    upper_right = "gdalinfo " + dem + " | grep 'Upper Right' >"+self.summary_directory+self.fname+"_upper_right.txt"
+    os.system(lower_left)
+    os.system(upper_right)
+    
+    #correctly extracts utm coordinates
+    LL = utmExtents(corner="_lower_left")
+    UR = utmExtents(corner="_upper_right")
+    
+    
+    #enable to help debug
+    if debug:
+      with open(self.summary_directory+'utm_log.txt', 'a') as param:
+        param.write(str(LL))
+      with open(self.summary_directory+'utm_log.txt', 'a') as param:
+        param.write(str(UR))
     
     #source of the TRMM dataset
     TRMM = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/annual.tif' 
@@ -122,20 +155,21 @@ class SRTM:
     ds = ds.ExportToProj4()
     
     #generating cutline
-    cutline = "gdaltindex %s_index.shp %s.bil" %(self.summary_directory+self.fname, self.summary_directory+self.fname)
-    os.system(cutline)
+    #cutline = "gdaltindex %s_index.shp %s.bil" %(self.summary_directory+self.fname, self.summary_directory+self.fname)
+    #os.system(cutline)
     
     #clipping raster, reprojecting, and setting resolution
+    #res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
+    
     res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     #print res_90
-    res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     
+    #res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
+    res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(LL[0],LL[1],UR[0],UR[1],TRMM,self.summary_directory,self.fname)    
     #clipping dem by same extent to help debug segmentation problems
-    clip_dem = "gdalwarp -of ENVI -cutline %s -crop_to_cutline -overwrite %s.bil %s.bil" %(self.summary_directory+self.fname+'_index.shp',self.summary_directory+self.fname,self.summary_directory+self.fname)
-    os.system(clip_dem)
-    #forcing precipitation raster extents to dem extents
-    force = "gdal_translate -of ENVI -projwin ulx uly lrx lry %s.bil %s_LITHRAST.bil"%(self.summary_directory+self.fname,self.summary_directory+self.fname)
-    os.system(force)
+    #clip_dem = "gdalwarp -of ENVI -cutline %s -crop_to_cutline -overwrite %s.bil %s.bil" %(self.summary_directory+self.fname+'_index.shp',self.summary_directory+self.fname,self.summary_directory+self.fname)
+    #os.system(clip_dem)
+
     
     print 'srtm 90  is ...s...', SRTM90
     if SRTM90:
@@ -144,8 +178,8 @@ class SRTM:
     else:
       os.system(res_30) 
       print res_30       
-  
-
+        #forcing precipitation raster extents to dem extents
+    
   def chiAnalysis (self, chi_stats_only=False, print_litho_info=0, burn_raster_to_csv=0, geology=0, TRMM=0, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0, use_precipitation_raster_for_chi = 0):
     
     #if chi_stats_only:  
