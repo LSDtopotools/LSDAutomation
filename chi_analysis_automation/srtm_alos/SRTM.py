@@ -102,10 +102,10 @@ class SRTM:
     os.system('ogr2ogr -t_srs'+" '"+ds+"' "+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'.shp')
     if SRTM90:
       #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
-      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')      
+      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')      
     else:
       #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
-      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')
   
   
 
@@ -161,11 +161,11 @@ class SRTM:
     #clipping raster, reprojecting, and setting resolution
     #res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
     
-    res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
+    res_90 = "gdalwarp -ot Float64 -of ENVI -tr 90 90 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te %s %s %s %s %s %s%s_precipitation.bil" %(LL[0],LL[1],UR[0],UR[1],TRMM,self.summary_directory,self.fname)
     #print res_90
     
     #res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -cutline %s -crop_to_cutline %s %s%s_LITHRAST.bil" %(self.summary_directory+self.fname+'_index.shp',TRMM,self.summary_directory,self.fname)
-    res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te %s %s %s %s %s %s%s_LITHRAST.bil" %(LL[0],LL[1],UR[0],UR[1],TRMM,self.summary_directory,self.fname)    
+    res_30 = "gdalwarp -ot Float64 -of ENVI -tr 30 30 -s_srs 'EPSG:4326' -t_srs"+" '"+ds+"' -te %s %s %s %s %s %s%s_precipitation.bil" %(LL[0],LL[1],UR[0],UR[1],TRMM,self.summary_directory,self.fname)    
     #clipping dem by same extent to help debug segmentation problems
     #clip_dem = "gdalwarp -of ENVI -cutline %s -crop_to_cutline -overwrite %s.bil %s.bil" %(self.summary_directory+self.fname+'_index.shp',self.summary_directory+self.fname,self.summary_directory+self.fname)
     #os.system(clip_dem)
@@ -211,15 +211,20 @@ class SRTM:
         os.makedirs(current_path)
       
       #putting key into current directory
-      if print_litho_info == 1 or burn_raster_to_csv == 1:
+      if geology == 1:
         geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
         shutil.copy2(geology_key,current_path)
-        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.bil',current_path+'geology_'+self.fname+'.bil')
-        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.hdr',current_path+'geology_'+self.fname+'.hdr')
+        shutil.copy2(self.summary_directory+self.fname+'_geology.bil',current_path+self.fname+'_geology.bil')
+        shutil.copy2(self.summary_directory+self.fname+'_geology.hdr',current_path+self.fname+'_geology.hdr')
+      if TRMM == 1:
+        geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
+        shutil.copy2(geology_key,current_path)
+        shutil.copy2(self.summary_directory+self.fname+'_precipitation.bil',current_path+self.fname+'_precipitation.bil')
+        shutil.copy2(self.summary_directory+self.fname+'_precipitation.hdr',current_path+self.fname+'_precipitation.hdr')
       #moving prepitation raster. Althought this is the same as the TRMM data written using the burn csv function, it is handled separatly to avoid problems when using lithology.
       if use_precipitation_raster_for_chi == 1: 
-        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.bil',current_path+'precipitation_'+self.fname+'.bil')
-        shutil.copy2(self.summary_directory+self.fname+'_LITHRAST.hdr',current_path+'precipitation_'+self.fname+'.hdr')      
+        shutil.copy2(self.summary_directory+self.fname+'_precipitation.bil',current_path+'precipitation_'+self.fname+'.bil')
+        shutil.copy2(self.summary_directory+self.fname+'_precipitation.hdr',current_path+'precipitation_'+self.fname+'.hdr')      
       
       shutil.copy2(self.summary_directory+self.fname+'.bil', current_path)
       shutil.copy2(self.summary_directory+self.fname+'.hdr', current_path)

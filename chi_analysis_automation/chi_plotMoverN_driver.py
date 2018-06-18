@@ -103,6 +103,7 @@ if inputs.use_precipitation_raster_for_chi == 0:
   use_precipitation_raster_for_chi = False
 if inputs.use_precipitation_raster_for_chi == 1:
   use_precipitation_raster_for_chi = True
+  precipitation_fname = 'precipitation_'+fname
 
   
 
@@ -113,6 +114,40 @@ def parameterWriter(parameter):
     write_param = param.write(parameter+'\n')
 
 #writing inputs to parameter file
+
+
+
+
+
+if not summary_directory:
+  summary_directory = current_path
+  print summary_directory
+
+if print_litho_info: #chi_lith analysis doesn't appear to work. Just burn raster info.
+  litho_raster = 'geology_'+fname
+else:
+  litho_raster = 'NULL'
+
+#handling selection of primary/secondary burn rasters
+
+if geology or TRMM:
+  burn_raster_to_csv = True
+else:
+  burn_raster_to_csv = False
+  secondary_burn_raster_to_csv = False
+  
+if geology and TRMM:
+  secondary_burn_raster_to_csv = True
+  burn_raster_prefix = fname+'_geology'
+  secondary_burn_raster_prefix = fname+'_precipitation'
+
+if geology and not secondary_burn_raster_to_csv:
+  burn_raster_prefix = fname+'_geology'
+
+if TRMM and not secondary_burn_raster_to_csv: 
+  burn_raster_prefix = fname+'_precipitation'
+
+
 parameterWriter("current_path: "+str(current_path))
 parameterWriter("fname: "+str(fname))
 parameterWriter("writing_prefix: "+str(writing_prefix))
@@ -129,37 +164,23 @@ parameterWriter("plotting: "+str(plotting))
 parameterWriter("geology: "+str(geology))
 parameterWriter("TRMM: "+str(TRMM))
 parameterWriter("use_precipitation_raster_for_chi: "+str(use_precipitation_raster_for_chi))
+parameterWriter("secondary_burn_raster_to_csv: "+str(secondary_burn_raster_to_csv))
+parameterWriter("secondary_burn_raster_prefix: "+str(secondary_burn_raster_prefix))
 
 
 parameterWriter("inputs.print_litho_info: "+str(inputs.print_litho_info))
 parameterWriter("inputs.burn_raster_to_csv: "+str(inputs.burn_raster_to_csv))
 parameterWriter("inputs.plotting: "+str(inputs.plotting))
 parameterWriter("inputs.geology: "+str(inputs.geology))
-parameterWriter("inputs.TRMM: "+str(inputs.TRMM))
+parameterWriter("inputs.TRMM: "+str(inputs.TRMM))  
 
 
-
-
-if not summary_directory:
-  summary_directory = current_path
-  print summary_directory
-
-if print_litho_info: #chi_lith analysis doesn't appear to work. Just burn raster info.
-  litho_raster = 'geology_'+fname
-else:
-  litho_raster = 'NULL'
-
-if burn_raster_to_csv:
-  burn_raster_prefix = 'geology_'+fname
-else:
-  burn_raster_prefix = 'NULL'
-
-if use_precipitation_raster_for_chi:
-  precipitation_fname = 'precipitation_'+fname
-
-#chi_analysis
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
-Ig.Iguanodon31.movern_calculation(chi, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False, print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation,use_precipitation_raster_for_chi=use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname)
+Ig.Iguanodon31.movern_calculation(chi, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False,
+ print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max,
+  threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation,
+  use_precipitation_raster_for_chi=use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname,burn_raster_to_csv = burn_raster_to_csv, 
+  secondary_burn_raster_to_csv=secondary_burn_raster_to_csv, burn_raster_prefix = burn_raster_prefix, secondary_burn_raster_prefix=secondary_burn_raster_prefix)
 
 print "????",current_path,writing_prefix
 
@@ -317,47 +338,47 @@ if burn_raster_to_csv:
     
     shutil.copy(current_path+writing_prefix+'_MChiSegmented_burn.csv', summary_directory+writing_prefix+'_MChiSegmented_burn.csv')
   
-  if geology == 0:
   
-    if TRMM == 1:
+  
+  if TRMM == 1:
     
-    #creating csv with rainfall averaged over basin segments, and including MN data
-      with open(current_path+writing_prefix+"_basin_TRMM.csv","wb") as csvfile:
-        csvWriter = csv.writer(csvfile,delimiter=',')
-        csvWriter.writerow(("basin_key","mean annual rainfall (mm)"))
+  #creating csv with rainfall averaged over basin segments, and including MN data
+    with open(current_path+writing_prefix+"_basin_TRMM.csv","wb") as csvfile:
+      csvWriter = csv.writer(csvfile,delimiter=',')
+      csvWriter.writerow(("basin_key","mean annual rainfall (mm)"))
 
-      #opening source of climate data
-      with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as csvfile:
-        pandasDF = pd.read_csv(csvfile,delimiter=',')
+    #opening source of climate data
+    with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as csvfile:
+      pandasDF = pd.read_csv(csvfile,delimiter=',')
       
-        #opening basin directory
-        with open(current_path+writing_prefix+'_AllBasinsInfo.csv','r') as csvfile_2:
-          csvReader = csv.reader(csvfile_2,delimiter=',')
-          next(csvReader)
+      #opening basin directory
+      with open(current_path+writing_prefix+'_AllBasinsInfo.csv','r') as csvfile_2:
+        csvReader = csv.reader(csvfile_2,delimiter=',')
+        next(csvReader)
         
-          for row in csvReader:
-            basin_number = int(row[5])
-            selected_DF = pandasDF.loc[pandasDF['basin_key'] == basin_number]
-            #getting burned data series for the basin
-            pandas_list = selected_DF['burned_data']
-            #print pandas_list
-            mean_rainfall = pandas_list.mean()
+        for row in csvReader:
+          basin_number = int(row[5])
+          selected_DF = pandasDF.loc[pandasDF['basin_key'] == basin_number]
+          #getting burned data series for the basin
+          pandas_list = selected_DF['burned_data']
+          #print pandas_list
+          mean_rainfall = pandas_list.mean()
       
-            with open(current_path+writing_prefix+'_basin_TRMM.csv', 'a') as csvfile_3:
-              csvWriter = csv.writer(csvfile_3,delimiter=',')
-              csvWriter.writerow((basin_number,mean_rainfall))
+          with open(current_path+writing_prefix+'_basin_TRMM.csv', 'a') as csvfile_3:
+            csvWriter = csv.writer(csvfile_3,delimiter=',')
+            csvWriter.writerow((basin_number,mean_rainfall))
     
-      with open(current_path+writing_prefix+'_basin_TRMM.csv','r') as file:
-        BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
-        PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
-        pandasDF = pd.read_csv(file, delimiter = ',')
-        pandasDF = pandasDF.merge(PointsDF, on='basin_key')
-        pandasDF.to_csv(current_path+writing_prefix+'_basin_TRMM_MN.csv', mode="w",header=True,index=False)
+    with open(current_path+writing_prefix+'_basin_TRMM.csv','r') as file:
+      BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
+      PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+      pandasDF = pd.read_csv(file, delimiter = ',')
+      pandasDF = pandasDF.merge(PointsDF, on='basin_key')
+      pandasDF.to_csv(current_path+writing_prefix+'_basin_TRMM_MN.csv', mode="w",header=True,index=False)
       
-      try:
-        shutil.copy(current_path+writing_prefix+"_basin_TRMM_MN.csv", summary_directory+writing_prefix+"_basin_TRMM.csv")
-      except:
-        print "failed moving TRMM stats to summary directory"
+    try:
+      shutil.copy(current_path+writing_prefix+"_basin_TRMM_MN.csv", summary_directory+writing_prefix+"_basin_TRMM.csv")
+    except:
+      print "failed moving TRMM stats to summary directory"
       
   
   if geology == 1:
@@ -515,10 +536,18 @@ if burn_raster_to_csv:
 
 
 #removing files duplicated from summary directory
-if burn_raster_to_csv:
-  os.remove(current_path+'geology_'+fname+'.bil')
-  os.remove(current_path+'geology_'+fname+'.hdr')
-  
+#if burn_raster_to_csv:
+if geology:
+  os.remove(current_path+fname+'_geology.bil')
+  os.remove(current_path+fname+'_geology.hdr')
+
+if TRMM:
+  os.remove(current_path+fname+'_precipitation.bil')
+  os.remove(current_path+fname+'_precipitation.hdr')
+
+if use_precipitation_raster_for_chi:
+  os.remove(current_path+'precipitation_'+fname+'.bil')
+  os.remove(current_path+'precipitation_'+fname+'.hdr')  
   
 print "did this end????"
 

@@ -17,6 +17,7 @@ parser.add_argument("-mergeAllBasins", "--mergeAllBasins",nargs='?',type=bool,de
 parser.add_argument("-junctions", "--junctions",nargs='?',type=bool,default=False)
 parser.add_argument("-burn_raster_to_csv", "--burn_raster_to_csv",nargs='?',type=bool,default=False)
 parser.add_argument("-plotting", "--plotting",nargs='?',type=bool,default=False)
+parser.add_argument("-use_precipitation_raster_for_chi", "--use_precipitation_raster_for_chi",nargs='?',type=bool,default=False)
 parser.add_argument("-min_elevation", "--min_elevation",nargs='?',type=int)
 parser.add_argument("-max_elevation", "--max_elevation",nargs='?',type=int)
 parser.add_argument("-geology", "--geology", nargs='?', type = bool, default=False)
@@ -28,14 +29,37 @@ alos = inputs.alos
 SRTM90 = inputs.SRTM90
 mergeAllBasins = inputs.mergeAllBasins
 junctions = inputs.junctions
-burn_raster_to_csv = inputs.burn_raster_to_csv
-geology = inputs.geology
-TRMM = inputs.TRMM
+
+#burn_raster_to_csv = inputs.burn_raster_to_csv
+#geology = inputs.geology
+#TRMM = inputs.TRMM
+
+if not inputs.burn_raster_to_csv:
+  burn_raster_to_csv = 0
+if inputs.burn_raster_to_csv:
+  burn_raster_to_csv = 1
+
+if not inputs.geology:
+  geology = 0
+if inputs.geology:
+  geology = 1
+
+if not inputs.TRMM:
+  TRMM = 0
+if inputs.TRMM:
+  TRMM = 1
+
+
 
 if not inputs.plotting:
   plotting = 0
 if inputs.plotting:
   plotting = 1
+  
+if not inputs.use_precipitation_raster_for_chi:
+  use_precipitation_raster_for_chi = 0
+if inputs.use_precipitation_raster_for_chi:
+  use_precipitation_raster_for_chi = 1
 
 #setting min and max elevations for chi analysis
 if inputs.min_elevation: 
@@ -50,7 +74,7 @@ else:
 
   
 
-paddy_long = 0.5
+paddy_long = 0.25
 
 
 path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/Himalayan_front/' 
@@ -119,7 +143,7 @@ with open(path+str(csv_name)+'.csv','r') as csvfile:
     if mergeAllBasins:
       with open(summary_directory+'summary_AllBasinsInfo.csv', 'wb') as csvfile:
         csvWriter = csv.writer(csvfile, delimiter = ',')
-        csvWriter.writerow(('latitude','longitude','outlet_longitude','outlet_longitude','outlet_junction','basin_key','source_name'))
+        csvWriter.writerow(('latitude','longitude','outlet_longitude','outlet_longitude','outlet_junction','basin_key','source_name','source_prefix'))
   
 
 with open(path+write+'.csv','r') as csvfile:
@@ -147,15 +171,15 @@ with open(path+write+'.csv','r') as csvfile:
      
      instanceSRTM = SRTM(name = name, tile = tile, lat = lat, lon = lon, alos=alos, SRTM90=SRTM90, mergeAllBasins=mergeAllBasins, junctions=junctions, path=path)
      
-     extents = instanceSRTM.rasterFetcher(paddy_lat = 0.5, paddy_long = paddy_long) #returns extents in format xmin,ymin,xmax,ymax
+     extents = instanceSRTM.rasterFetcher(paddy_lat = 0.25, paddy_long = paddy_long) #returns extents in format xmin,ymin,xmax,ymax
      
      print 'SRTM90 is:...', SRTM90
      #if not SRTM90:
-     if geology:
+     if geology == 1:
         instanceSRTM.getGeologyRaster(SRTM90=SRTM90,extents=extents)
-     if TRMM:
+     if TRMM == 1:
         instanceSRTM.getTRMM(SRTM90=SRTM90,extents=extents)
-     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=False, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting, geology=geology, TRMM=TRMM)     
+     instanceSRTM.chiAnalysis(instanceSRTM, iterations = iterations,  min_basin = min_basin, interval_basin = basin_interval, print_litho_info=0, burn_raster_to_csv = burn_raster_to_csv,min_elevation=min_elevation, max_elevation=max_elevation, plotting = plotting, geology=geology, TRMM=TRMM, use_precipitation_raster_for_chi=use_precipitation_raster_for_chi)     
 
 
 

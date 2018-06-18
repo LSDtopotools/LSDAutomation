@@ -120,7 +120,7 @@ class Iguanodon31:
 only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channel_to_node_before_receiver_junction = True,find_complete_basins_in_window = True, find_largest_complete_basins = False,
  print_basin_raster  = False, convert_csv_to_geojson = False,print_stream_order_raster = False,print_channels_to_csv = False, print_junction_index_raster= False,print_junctions_to_csv =False,print_fill_raster = False,
  print_DrainageArea_raster = False, write_hillshade = True,print_basic_M_chi_map_to_csv = False, ksn_knickpoint_analysis = False, A_0 = 1,m_over_n = 0.5,threshold_pixels_for_chi = 0, basic_Mchi_regression_nodes = 11,
-  burn_raster_to_csv = False,burn_raster_prefix = 'NULL',burn_data_csv_column_header = 'burned_data', n_movern = 8, start_movern = 0.1, delta_movern = 0.1, only_use_mainstem_as_reference = True,calculate_MLE_collinearity = False,
+  burn_raster_to_csv = False,burn_raster_prefix = 'NULL',burn_data_csv_column_header = 'burned_data',secondary_burn_raster_to_csv = False,secondary_burn_raster_prefix = 'NULL',secondary_burn_data_csv_column_header = 'secondary_burned_data', n_movern = 8, start_movern = 0.1, delta_movern = 0.1, only_use_mainstem_as_reference = True,calculate_MLE_collinearity = False,
  collinearity_MLE_sigma = 1000, print_profiles_fxn_movern_csv = False, calculate_MLE_collinearity_with_points = False, calculate_MLE_collinearity_with_points_MC = False, MC_point_fractions = 5, MC_point_iterations = 1000,
  max_MC_point_fraction = 0.5, movern_residuals_test = False, MCMC_movern_analysis = False, MCMC_movern_minimum = 0.05, MCMC_movern_maximum = 1.5, MCMC_chain_links = 5000, estimate_best_fit_movern = True,
  SA_vertical_interval = 20,log_A_bin_width = 0.1,print_slope_area_data = False, segment_slope_area_data = False, slope_area_minimum_segment_length = 3, bootstrap_SA_data =False, N_SA_bootstrap_iterations = 1000,
@@ -230,6 +230,9 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 		file.write('burn_raster_to_csv: %s \n'%(to_cpp(burn_raster_to_csv)))
 		file.write('burn_raster_prefix: %s \n'%(to_cpp(burn_raster_prefix)))
 		file.write('burn_data_csv_column_header: %s \n'%(to_cpp(burn_data_csv_column_header)))
+		file.write('secondary_burn_raster_to_csv: %s \n'%(to_cpp(secondary_burn_raster_to_csv)))
+		file.write('secondary_burn_raster_prefix: %s \n'%(to_cpp(secondary_burn_raster_prefix)))
+		file.write('secondary_burn_data_csv_column_header: %s \n'%(to_cpp(secondary_burn_data_csv_column_header)))
 		file.write('n_movern: %s \n'%(to_cpp(n_movern)))
 		file.write('print_stream_order_raster: %s \n'%(to_cpp(print_stream_order_raster)))
 
@@ -273,14 +276,13 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 		"""
 		self.chi_mapping_tool_full(print_litho_info=False,litho_raster=False,threshold_contributing_pixels = 1000, print_chi_coordinate_raster = True,print_simple_chi_map_to_csv = True, print_chi_data_maps = True, test_drainage_boundaries = True,estimate_best_fit_movern = False,write_hillshade = False,threshold_pixels_for_chi = 0,only_use_mainstem_as_reference = True)
 
-	def movern_calculation(self, burn_raster_to_csv, burn_raster_prefix, print_litho_info, litho_raster, print_junctions_to_csv, n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, print_segmented_M_chi_map_to_csv =False, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv =True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, only_take_largest_basin = True, write_hillshade = True, plot = True,  minimum_elevation = 0, maximum_elevation= 30000,use_precipitation_raster_for_chi = False,precipitation_fname = "NULL"):
+	def movern_calculation(self, print_litho_info, litho_raster, print_junctions_to_csv, n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, print_segmented_M_chi_map_to_csv =False, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv =True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, only_take_largest_basin = True, write_hillshade = True, plot = True,  minimum_elevation = 0, maximum_elevation= 30000,use_precipitation_raster_for_chi = False,precipitation_fname = "NULL",burn_raster_to_csv=False, burn_raster_prefix="NULL",secondary_burn_raster_to_csv=False,secondary_burn_raster_prefix="Null"):
 		"""
 			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
 			Author: Boris Gailleton - 16/11/2017
 
 		"""
-
-		self.chi_mapping_tool_full(burn_raster_to_csv=burn_raster_to_csv,burn_raster_prefix=burn_raster_prefix, print_litho_info=print_litho_info, litho_raster=litho_raster, print_junctions_to_csv=print_junctions_to_csv, n_movern = n_movern,start_movern = start_movern,delta_movern = delta_movern,estimate_best_fit_movern= True,print_basin_raster = print_basin_raster,minimum_basin_size_pixels = minimum_basin_size_pixels, maximum_basin_size_pixels = maximum_basin_size_pixels,threshold_contributing_pixels = threshold_contributing_pixels,only_take_largest_basin=only_take_largest_basin,write_hillshade = write_hillshade, minimum_elevation = minimum_elevation, maximum_elevation = maximum_elevation, use_precipitation_raster_for_chi = use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname)
+		self.chi_mapping_tool_full(burn_raster_to_csv=burn_raster_to_csv,burn_raster_prefix=burn_raster_prefix, secondary_burn_raster_to_csv=secondary_burn_raster_to_csv,secondary_burn_raster_prefix=secondary_burn_raster_prefix, print_litho_info=print_litho_info, litho_raster=litho_raster, print_junctions_to_csv=print_junctions_to_csv, n_movern = n_movern,start_movern = start_movern,delta_movern = delta_movern,estimate_best_fit_movern= True,print_basin_raster = print_basin_raster,minimum_basin_size_pixels = minimum_basin_size_pixels, maximum_basin_size_pixels = maximum_basin_size_pixels,threshold_contributing_pixels = threshold_contributing_pixels,only_take_largest_basin=only_take_largest_basin,write_hillshade = write_hillshade, minimum_elevation = minimum_elevation, maximum_elevation = maximum_elevation, use_precipitation_raster_for_chi = use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname)
 		if (plot):
 			plotting_command = "python %sPlotMOverNAnalysis.py -dir %s -fname %s -ALL True" %(self.LSDMT_path,self.wpath,self.wprefix)
 			sub.call(plotting_command, shell = True)    
