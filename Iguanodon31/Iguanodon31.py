@@ -1,4 +1,13 @@
 #Iguanodon is an automation class for LSDTopoTools because I am Lazy.
+# SMM: I am attempting to go through this and document it as best I can. 
+# The purpose of this package is to manage the downloading and processing 
+# of topographic data. 
+# 
+# There are a series of routines for fetching data from opentopography
+# and then additional functions that run LSDTopoTools analyses. 
+# These are done using subprocess calls.
+#
+# Documentation started 26/06/2018 somewhere in the air near Paris. 
 
 import utm
 import os
@@ -7,6 +16,24 @@ import subprocess as sub
 class Iguanodon31:
 
 	def __init__(self,reading_path, reading_prefix, writing_path = "", writing_prefix = "", data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False):
+        """
+        The Iguanodon31 object automates running analyses and plotting results. 
+        The data members are mostly paths to where data is located and where plotting scripts are located. 
+        
+        reading_path (str): The directory of the data
+        reading_prefix (str): The prefix of the data (e.g., SuperPlace.bil will have a prefix of SuperPlace)
+        writing_path (str): Directory to which the code writes. If an empty string it will write to the reading_path.
+        writing_prefix (str): Prefix of writing rasters. If empty string defaults to reading_prefix.
+        data_source (str): If this is OT_SRTM30, the program will run assuming the data is the SRTM30 data
+        from OpenTopography.org. Otherwise it will assume data is ready for processing. 
+        In the future more options will be added here. 
+        preprocessing_raster (bool): If true, run some preprocessing routines to convert to correct coordinate system, format, clean up nodata, etc. Needed if you are directly grabbing SRTM tiles. 
+        UTM_zone (int): Sets the UTM zone
+        south (bool): If true, sets the UTM zone to south. Otherwise the UTM zone will be north. 
+        
+        Author: BG
+        
+        """
 		
 		# Setting the reading parameters
 		self.rpath = reading_path
@@ -35,6 +62,8 @@ class Iguanodon31:
 			print('I am importing the data from raw opentopo file')
 			extract_file(self.rpath,"rasters_srtm.tar.gz")
 			OT_SRTM30_toLSDTT(self.rpath,"output_srtm.tif", UTM_zone, self.wpath+self.wprefix+".bil", reso =30, south = south)
+        else:
+            print("You didn't tell me the data source so I will assume you have prepared rasters.")
 
 		# Loading the LSDTT setup configuration
 		setup_file = open('config.config','r')
@@ -52,6 +81,13 @@ class Iguanodon31:
 		"""
 			This function preprocess the raster, it sorts some nodata issues and recast the data into float
 			if replace is activated, it replace the original file.
+            
+            Args:
+                replace (bool): If true, this replaces the current raster with a raster with "remove seas".
+                WARNING: You lose the original DEM so do this with caution!
+                
+            Author: BG
+            
 
 		"""
 		print('I am preprocessing your raster')
@@ -63,7 +99,7 @@ class Iguanodon31:
 		# Writing the file
 		file = open(fname_to_write, 'w')
 		file.write('# This is a parameter file for the chi_mapping_tool \n')
-		file.write('# One day there will be documentation. \n')
+		file.write('# Documentation at: http://lsdtopotools.github.io/Documentation/ \n')
 		file.write(' \n')
 		file.write('# These are parameters for the file i/o \n')
 		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
@@ -74,8 +110,7 @@ class Iguanodon31:
 		file.close()
 		# done with writing
 
-		# let's run the analysis
-
+		# let's run the analysis with a subprocess call
 		lsdtt_pp = sub.call(self.LSDTT_path+'Analysis_driver/DEM_preprocessing.exe '+self.wpath + ' ' +self.wprefix + '_PreProcessing.param',shell = True)
 
 		print("Done with the preprocessing")
@@ -83,7 +118,16 @@ class Iguanodon31:
 
 	def basics_metric(self,topo = True,slope = True, curvature = True, plot = True):
 		"""
-		This function will simply produce and eventualy plot a topographic map and a slope map.
+		This function simply produces and plots a topographic map and a slope map.
+        
+        Args:
+            topo (bool): If true, plot the topography
+            slope (bool): If true calculate and plot a slope map
+            curvature (bool): I true calculate and plot a curvature map
+            plot (bool): If true make the call to the python plotting routine
+            
+        Author: BG
+        
 		"""
 		# writing the file
 		# Writing the file
@@ -107,10 +151,11 @@ class Iguanodon31:
 		# done with writing the parameter file
 
 		#analysis command
-
 		Analysis_command = "%sAnalysis_driver/LSDTT_analysis_from_paramfile.out %s %s" %(self.LSDTT_path, param_name, self.wprefix)
+        # Now call the subprocess
 		sub.call(Analysis_command, shell = True)
 
+        # Use the raster plotting python routine to plot the results. 
 		if (plot):
 			plotting_command = "python %sPlotBasicRaster.py -dir %s -fname %s -t %s -S %s -C %s" %(self.LSDMT_path,self.wpath,self.wprefix, topo, slope, curvature)
 			sub.call(plotting_command, shell = True)
@@ -130,6 +175,9 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
    precipitation_fname = "NULL", print_segments = False, print_segments_raster = False):
 		"""
 		This function will manipulate the chi_mapping_tool.exe. I reccomend creating intermediate functions to control this massive function for specific purposes ex MuddChi_2014, Mudd_movern_2018, ...
+
+        SMM 26/06/2018: This takes every possible input to a chi mapping tool call and passes these as
+        arguments. 
 
 		"""
 		# writing the file
@@ -250,35 +298,91 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 	def basin_extraction(self, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, print_basin_raster = True, remove_seas = False, threshold_contributing_pixels = 5000, estimate_best_fit_movern = False, print_channels_to_csv = True, write_hillshade = True):
 		"""
 			Provides a simple basin extraction tool.
-			Author: Calum Bradbury - 30/11/2017
+			
+            Args:
+                minimum_basin_size_pixels (int): The minimum basin size in pixels. 
+                maximum_basin_size_pixels (int): The maximum basin size in pixels. The default will result in
+                a quite large basin (or basins).
+                print_basin_raster (bool): If true, calls the python plotting script for the basin.
+                remove_seas (true): If true, set the remove_seas flag to true in the chi analysis. The 
+                minimum and maximum elevations are the defaults so basically all this will do is it will turn
+                points on the raster at sea level or lower to nodata. 
+                threshold_contributing_pixels (int): The accumulated prixels needed to begin a channel. 
+                estimate_best_fit_movern (bool): If true this triggers the full concavity analysis.
+                It takes a long time!
+                print_channels_to_csv (bool): If true you get a csv with channels. 
+                You can use this for plotting.
+                write_hillshade (bool): If true, writes the hillshade. If you set this to false it will mess up your plotting unless you have previously calculated the hillshade. 
+            
+            Author: Calum Bradbury - 30/11/2017
+            
+            
 
 		"""
 
+        # This calls the full chi mapping tool but with specific defaults set. 
 		self.chi_mapping_tool_full(minimum_basin_size_pixels = minimum_basin_size_pixels, print_basin_raster = print_basin_raster, maximum_basin_size_pixels = maximum_basin_size_pixels, remove_seas = remove_seas, threshold_contributing_pixels = threshold_contributing_pixels, estimate_best_fit_movern = estimate_best_fit_movern, print_channels_to_csv = print_channels_to_csv, write_hillshade = write_hillshade)
   
     
 	def ksn_calculation(self,print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True):
 		"""
 			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
+            
+            Args:
+                print_basin_raster (bool): True if you want to print the basin raster to file
+                minimum_basin_size_pixels (int): Does what it says on the tin.
+                maximum_basin_size_pixels (int): Does what it says on the tin.
+                m_over_n (float): The concavity you want to use for the analysis (m/n is legacy terminology)
+                threshold_contributing_pixels (int): The number of pixels you need to accumulate to get a channel.
+                write_hillshade (bool): If true write the hillshade raster
+                plot (bool): If true call the LSDMappingTools plotting routines. 
+                
 			Author: Boris Gailleton - 16/11/2017
 
 		"""
 
+        # Run the analysis in a subprocess
 		self.chi_mapping_tool_full(print_basin_raster = print_basin_raster,minimum_basin_size_pixels = minimum_basin_size_pixels, maximum_basin_size_pixels = maximum_basin_size_pixels, m_over_n =m_over_n,threshold_contributing_pixels = threshold_contributing_pixels,write_hillshade = write_hillshade)
-		if (plot):
+		
+        # Plot results if that is what you want
+        if (plot):
 			plotting_command = "python %sPlotKnickpointAnalysis.py -dir %s -fname %s -mcstd True -mcbk True" %(self.LSDMT_path,self.wpath,self.wprefix)
 			sub.call(plotting_command, shell = True)
 
-	def chi_stats_only(self):
+	def chi_stats_only(self, m_over_n = 0.5):
 		""""
-			Provides extraction of landscape chi stats only.
+			Provides extraction of the landscape chi coordinate only
+            
+            Args:
+                m_over_n (float): The concavity for the chi calculation (added by SMM 26/06/2018)
+                
 			Author: Calum Bradbury - 07/03/2018
 		"""
-		self.chi_mapping_tool_full(print_litho_info=False,litho_raster=False,threshold_contributing_pixels = 1000, print_chi_coordinate_raster = True,print_simple_chi_map_to_csv = True, print_chi_data_maps = True, test_drainage_boundaries = True,estimate_best_fit_movern = False,write_hillshade = False,threshold_pixels_for_chi = 0,only_use_mainstem_as_reference = True)
+		self.chi_mapping_tool_full(print_litho_info=False,litho_raster=False,threshold_contributing_pixels = 1000, m_over_n = m_over_n, print_chi_coordinate_raster = True,print_simple_chi_map_to_csv = True, print_chi_data_maps = True, test_drainage_boundaries = True,estimate_best_fit_movern = False,write_hillshade = False,threshold_pixels_for_chi = 0,only_use_mainstem_as_reference = True)
 
 	def movern_calculation(self, print_litho_info, litho_raster, print_junctions_to_csv, n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, print_segmented_M_chi_map_to_csv =False, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv =True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, only_take_largest_basin = True, write_hillshade = True, plot = True,  minimum_elevation = 0, maximum_elevation= 30000,use_precipitation_raster_for_chi = False,precipitation_fname = "NULL",burn_raster_to_csv=False, burn_raster_prefix="NULL",secondary_burn_raster_to_csv=False,secondary_burn_raster_prefix="Null"):
 		"""
-			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
+			This runs the concavity analysis
+            
+            Args:
+                print_litho_info (bool): If true prints the csv for lithology
+                litho_raster (str): I (SMM) think this is the name of the lithology raster
+                print_junctions_to_csv (bool): If true, print the locations of the junctions.
+                Useful for later selecting specific basins.
+                n_movern (int): The number of concavity index values you want to test
+                start_movern (float): The starting concavity index
+                delta_movern (float): The change in concavity index after each iteration
+                print_basin_raster (bool): f true prints the basin raster. Used for plotting. 
+                print_segmented_M_chi_map_to_csv (bool): If true prints the segmented channels. Uses default concavity (0.5).
+                print_chi_data_maps (bool): If true pruint the data maps that are used for plotting.
+                print_simple_chi_map_with_basins_to_csv (bool): This is superceded by the print_chi_data_maps but I (SMM) am leaving it in to avoid breaking Boris' code.
+                minimum_basin_size_pixels (int): Does what it says on the tin.
+                maximum_basin_size_pixels (int): Does what it says on the tin.
+                m_over_n (float): The concavity you want to use for the analysis (m/n is legacy terminology)
+                threshold_contributing_pixels (int): The number of pixels you need to accumulate to get a channel.
+                write_hillshade (bool): If true write the hillshade raster
+                plot (bool): If true call the LSDMappingTools plotting routines.
+                
 			Author: Boris Gailleton - 16/11/2017
 
 		"""
@@ -290,7 +394,17 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 
 	def knickpoint_calculation(self,print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True):
 		"""
-			Provide a first-order ksn calculation for the  a range of basin, a threshold for river detection and a fixed concavity index.
+			This runs the knickpoint detection routines
+            
+            Args:
+                print_basin_raster (bool): If true, prints the basin raster. Needed for plotting.
+                minimum_basin_size_pixels (int): Does what it says on the tin.
+                maximum_basin_size_pixels (int): Does what it says on the tin.
+                m_over_n (float): The concavity you want to use for the analysis (m/n is legacy terminology)
+                threshold_contributing_pixels (int): The number of pixels you need to accumulate to get a channel.
+                write_hillshade (bool): If true write the hillshade raster
+                plot (bool): If true call the LSDMappingTools plotting routines.
+                
 			Author: Boris Gailleton - 16/11/2017
 
 		"""
@@ -313,6 +427,9 @@ def extract_file(fpath,fname,file_type = 'targz'):
 
 
 def OT_SRTM30_toLSDTT(fpath,fname, UTM_zone, out_full_name, reso = 30, south = False):
+    """
+    This function takes a raster and converts it to one in UTM zone of your choice. 
+    """
 
 	if(south):
 		conversion_command = "gdalwarp -t_srs '+proj=utm +zone=%s +south +datum=WGS84' -of ENVI -r cubic -tr %s %s %s %s" %(UTM_zone,reso,reso,fpath+fname, fpath+out_full_name)
@@ -324,6 +441,11 @@ def OT_SRTM30_toLSDTT(fpath,fname, UTM_zone, out_full_name, reso = 30, south = F
 	print("resolution is ",reso)
 
 def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = False, remove_old_files = True, return_iguanodon = False, return_extents = False, alos=False, SRTM90 = False):
+    """
+    This function has a slightly misleading name since it gets rasters from a variety of data sources. 
+    
+    All the data come from OpenTopography but they host SRTM30, SRTM90 and ALOS 30data, all of which you can get. 
+    """
 
 	# Calculation of the extents
 	xmin = lon - paddy_long
@@ -333,6 +455,7 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
 
 	if(xmin>=xmax or ymin>= ymax):
 		print("UNVALID PARAMETERS: the extend of the wanted raster are not valid. Check it.")
+        print("This error is here because your xmax or ymax were less than your xmin or ymin")
 	#allows use of ALOS raster
 	if alos:
 		wget_command = 'wget -O %s "http://opentopo.sdsc.edu/otr/getdem?demtype=AW3D30&west=%s&south=%s&east=%s&north=%s&outputFormat=GTiff"'%(fpath+fname,xmin,ymin,xmax,ymax)
@@ -407,6 +530,12 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
 		return IG
     
 def get_ALOS30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = False, remove_old_files = True, return_iguanodon = False):
+    """
+    The name of this unction suggests it gets ALOS data but the function call below suggests it gets SRTM
+    
+    Author: ???
+    
+    """
 
 	# Calculation of the extents
 	xmin = lon - paddy_long
@@ -486,6 +615,12 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 		ex1,23.45,54.9
 		ex2,11.23,78.87
 		...
+        
+        Args:
+            csv_path (str): The directory of the path with the csv file that contains the lat-long
+            csv_fname (str): The name of the csv file
+            get_raster (bool): If true, fetch the raster from a data repository (at the moment SRTM30 from OpenTopography)
+            multiprocessing (int): This isn't implemented at the moment but in the future will call multiple subprocesses. 
 
 		Author: Boris Gailleton - 16/11/2017
 
@@ -558,6 +693,7 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 
 
 	print("I am done with loading your files, let me proceed to the Analysis")
+    # Each file generates and Iguanodon31 object which manages the analyses. 
 	for Iguanodons in list_of_files:
 		Iguanodons.ksn_calculation(print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
 		Iguanodons.movern_calculation(n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
@@ -569,11 +705,15 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 
 
 
-
-
-
-
 def bool_for_cpp(boo):
+    """
+    This just converts a python boolean into a string that is readable by c++ code
+    
+    Args:
+        boo (bool): A python boolean to be converted to a string. 
+    
+    Author: BG
+    """
 	stre = ''
 	if(boo):
 		stre = 'true'
@@ -582,6 +722,10 @@ def bool_for_cpp(boo):
 	return stre
 
 def to_cpp(ar):
+    """
+    SMM: Not sure what the point of this is. 
+    
+    """
 	if(isinstance(ar,bool)):
 		ar = bool_for_cpp(ar)
 	return ar
