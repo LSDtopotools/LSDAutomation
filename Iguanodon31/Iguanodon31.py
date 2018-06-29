@@ -177,7 +177,7 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 		This function will manipulate the chi_mapping_tool.exe. I reccomend creating intermediate functions to control this massive function for specific purposes ex MuddChi_2014, Mudd_movern_2018, ...
 
         SMM 26/06/2018: This takes every possible input to a chi mapping tool call and passes these as
-        arguments. 
+        arguments. The defaults are set the the default values of the chi_mapping_tool
 
 		"""
 		# writing the file
@@ -417,18 +417,42 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 ###### end of the class
 
 def extract_file(fpath,fname,file_type = 'targz'):
+    """
+    Extracts the targz file that you get from opentopography
+    
+    Args: 
+        fpath (str): The name of the path to which you will save the file
+        fname (str): The name of the file (i.e., what you rename the file after downloading)
+        file_type (str): You can also designate zip files if you want (the two types are targz and zip)
+        
+    Author: BG
+    
+    """
 	
 	if(file_type == 'targz'):
 		extract_command = "tar xzvf %s"%(fpath+fname)
-	if(file_type == 'zip'):
+	elif(file_type == 'zip'):
 		extract_command = "unzip %s"%(fpath+fname)
+    else 
+        extract_command = "tar xzvf %s"%(fpath+fname) 
 
 	extract_popen = sub.call(extract_command, shell = True)
 
 
 def OT_SRTM30_toLSDTT(fpath,fname, UTM_zone, out_full_name, reso = 30, south = False):
     """
-    This function takes a raster and converts it to one in UTM zone of your choice. 
+    This function takes a raster and converts it to one in UTM zone of your choice.
+    It also resamples to a resolution of your choice using cubic sampling
+    
+    Args: 
+        fpath (str): The name of the path to which you will save the file
+        fname (str): The name of the file (i.e., what you rename the file after downloading)
+        UTM_zone (int): The UTM zone, duh
+        out_full_name (str): The prefix of the outfile (I think you need .bil at the end)
+        reso (float): The resolution in metres
+        south (bool): If true in UTM south
+        
+    Author: BG
     """
 
 	if(south):
@@ -444,7 +468,23 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
     """
     This function has a slightly misleading name since it gets rasters from a variety of data sources. 
     
-    All the data come from OpenTopography but they host SRTM30, SRTM90 and ALOS 30data, all of which you can get. 
+    All the data come from OpenTopography but they host SRTM30, SRTM90 and ALOS 30data, all of which you can get. However the default is to get SRTM30 (or to be clearer, it will always get SRTM30 but
+    you can get additional datasets)
+    
+    Args: 
+        fpath (str): The name of the path to which you will save the file
+        fname (str): The name of the file (i.e., what you rename the file after downloading)
+        lat (float): The centre latitude
+        long (float): The centre longitude
+        paddy_lat (float): How far away from the centre, in each direction, the raster will extend in latitude.
+        paddy_long (float): How far away from the centre, in each direction, the raster will extend in longitude.
+        get_main_basin (bool): If true this then clips the raster to the biggest basin. It uses the basin spawner to do this so the resulting DEM is padded such that you can later use it for chi ananlysis.
+        remove_old_files (bool): If true, deletes the old files (or overwrites them).
+        return_iguanadon (bool): if true passes the Iguanodon31 object back so that it can be used for other things. 
+        alos (bool): If true get ALOS data
+        SRTM90 (bool): If true get SRTM90 data
+        
+    Author: CB?
     """
 
 	# Calculation of the extents
@@ -531,9 +571,20 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
     
 def get_ALOS30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy_long = 0.2, get_main_basin = False, remove_old_files = True, return_iguanodon = False):
     """
-    The name of this unction suggests it gets ALOS data but the function call below suggests it gets SRTM
+    This gets ALOS data from OpenTopography
     
-    Author: ???
+    Args: 
+        fpath (str): The name of the path to which you will save the file
+        fname (str): The name of the file (i.e., what you rename the file after downloading)
+        lat (float): The centre latitude
+        long (float): The centre longitude
+        paddy_lat (float): How far away from the centre, in each direction, the raster will extend in latitude.
+        paddy_long (float): How far away from the centre, in each direction, the raster will extend in longitude.
+        get_main_basin (bool): If true this then clips the raster to the biggest basin. It uses the basin spawner to do this so the resulting DEM is padded such that you can later use it for chi ananlysis.
+        remove_old_files (bool): If true, deletes the old files (or overwrites them).
+        return_iguanadon (bool): if true passes the Iguanodon31 object back so that it can be used for other things. 
+    
+    Author: BG
     
     """
 
@@ -657,6 +708,8 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 		# quit()
 		# getting the rest of the informations
 
+        # This reads the list of files, creates an Iguanodon31 object for each one,
+        # and then uses that object to grab data from OpenTopography.org 
 		for line in file.readlines():
 			temp = line.rstrip().split(",")
 			this_dict = {}
@@ -674,6 +727,7 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 
 	else:
 		# If you just want to read your files already dowloaded with the same pattern
+        # SMM: This skips the downloading part if you have already grabbed the rasters
 		list_of_files = []
 		file = open(csv_path+csv_fname, "r")
 		header = file.readline().rstrip().split(",")
@@ -693,7 +747,8 @@ def Analysis_from_multiple_lat_long(csv_path,csv_fname, get_raster = False, mult
 
 
 	print("I am done with loading your files, let me proceed to the Analysis")
-    # Each file generates and Iguanodon31 object which manages the analyses. 
+    # EThe previous steps have generated an Iguanodon31 object from the file list, 
+    # and now we loop through those objects to run the analyses. 
 	for Iguanodons in list_of_files:
 		Iguanodons.ksn_calculation(print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
 		Iguanodons.movern_calculation(n_movern =  18, start_movern = 0.1, delta_movern = 0.05, print_basin_raster = True, minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, threshold_contributing_pixels = 5000, write_hillshade = True, plot = True)
