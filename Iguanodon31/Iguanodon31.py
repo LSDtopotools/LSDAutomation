@@ -1,4 +1,4 @@
-#Iguanodon is an automation class for LSDTopoTools because I am Lazy.
+# Iguanodon is an automation class for LSDTopoTools because I am Lazy.
 # SMM: I am attempting to go through this and document it as best I can. 
 # The purpose of this package is to manage the downloading and processing 
 # of topographic data. 
@@ -134,7 +134,7 @@ class Iguanodon31:
 		param_name = self.wpath+self.wprefix+"_basic_analysis.param"
 		file = open(param_name, 'w')
 		file.write('# This is a parameter file for the chi_mapping_tool \n')
-		file.write('# One day there will be documentation. \n')
+		file.write('# Documentation is here: https://lsdtopotools.github.io/LSDTT_documentation/LSDTT_chi_analysis.html \n')
 		file.write(" \n")
 		file.write('# These are parameters for the file i/o \n')
 		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
@@ -159,25 +159,40 @@ class Iguanodon31:
 		if (plot):
 			plotting_command = "python %sPlotBasicRaster.py -dir %s -fname %s -t %s -S %s -C %s" %(self.LSDMT_path,self.wpath,self.wprefix, topo, slope, curvature)
 			sub.call(plotting_command, shell = True)
+            
+            
 
-	def chi_mapping_tool_full(self,print_litho_info,litho_raster,minimum_elevation = 0, maximum_elevation = 30000, min_slope_for_fill = 0.0001, raster_is_filled = False, remove_seas = True
-,only_check_parameters = False,print_raster_without_seas= False, CHeads_file = 'NULL', threshold_contributing_pixels = 200,minimum_basin_size_pixels = 5000, maximum_basin_size_pixels = 8000, test_drainage_boundaries = True, 
-only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channel_to_node_before_receiver_junction = True,find_complete_basins_in_window = True, find_largest_complete_basins = False,
- print_basin_raster  = False, convert_csv_to_geojson = False,print_stream_order_raster = False,print_channels_to_csv = False, print_junction_index_raster= False,print_junctions_to_csv =False,print_fill_raster = False,
- print_DrainageArea_raster = False, write_hillshade = True,print_basic_M_chi_map_to_csv = False, ksn_knickpoint_analysis = False, A_0 = 1,m_over_n = 0.5,threshold_pixels_for_chi = 0, basic_Mchi_regression_nodes = 11,
-  burn_raster_to_csv = False,burn_raster_prefix = 'NULL',burn_data_csv_column_header = 'burned_data',secondary_burn_raster_to_csv = False,secondary_burn_raster_prefix = 'NULL',secondary_burn_data_csv_column_header = 'secondary_burned_data', n_movern = 8, start_movern = 0.1, delta_movern = 0.1, only_use_mainstem_as_reference = True,calculate_MLE_collinearity = False,
- collinearity_MLE_sigma = 1000, print_profiles_fxn_movern_csv = False, calculate_MLE_collinearity_with_points = False, calculate_MLE_collinearity_with_points_MC = False, MC_point_fractions = 5, MC_point_iterations = 1000,
- max_MC_point_fraction = 0.5, movern_residuals_test = False, MCMC_movern_analysis = False, MCMC_movern_minimum = 0.05, MCMC_movern_maximum = 1.5, MCMC_chain_links = 5000, estimate_best_fit_movern = True,
- SA_vertical_interval = 20,log_A_bin_width = 0.1,print_slope_area_data = False, segment_slope_area_data = False, slope_area_minimum_segment_length = 3, bootstrap_SA_data =False, N_SA_bootstrap_iterations = 1000,
-  SA_bootstrap_retain_node_prbability = 0.5,n_iterations = 20,minimum_segment_length = 10, maximum_segment_length = 100000, n_nodes_to_visit = 10, target_nodes = 80,skip = 2, sigma = 20,print_chi_coordinate_raster = False,
-   print_simple_chi_map_to_csv = True, print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv = True,print_segmented_M_chi_map_to_csv =True, print_source_keys = True,
-   print_sources_to_csv = False, print_sources_to_raster =False, print_baselevel_keys = False, use_precipitation_raster_for_chi = False,  print_discharge_raster = False,print_chi_no_discharge = False,check_chi_maps = False,
-   precipitation_fname = "NULL", print_segments = False, print_segments_raster = False):
+	def chi_mapping_tool_full(self,print_litho_info,litho_raster,minimum_elevation = 0, maximum_elevation = 30000, min_slope_for_fill = 0.0001, 
+                              raster_is_filled = False, remove_seas = True ,only_check_parameters = False,print_raster_without_seas= False, 
+                              CHeads_file = 'NULL', threshold_contributing_pixels = 200,minimum_basin_size_pixels = 5000, 
+                              maximum_basin_size_pixels = 8000, test_drainage_boundaries = True, only_take_largest_basin = False, 
+                              BaselevelJunctions_file = "NULL", extend_channel_to_node_before_receiver_junction = True,find_complete_basins_in_window = True, 
+                              find_largest_complete_basins = False, print_basin_raster  = False, convert_csv_to_geojson = False,
+                              print_stream_order_raster = False,print_channels_to_csv = False, print_junction_index_raster= False,
+                              print_junctions_to_csv =False,print_fill_raster = False,print_DrainageArea_raster = False, 
+                              write_hillshade = True,print_basic_M_chi_map_to_csv = False, ksn_knickpoint_analysis = False, A_0 = 1,m_over_n = 0.5,threshold_pixels_for_chi = 0, basic_Mchi_regression_nodes = 11,burn_raster_to_csv = False,burn_raster_prefix = 'NULL',
+                              burn_data_csv_column_header = 'burned_data',secondary_burn_raster_to_csv = False,
+                              secondary_burn_raster_prefix = 'NULL',secondary_burn_data_csv_column_header = 'secondary_burned_data', 
+                              n_movern = 8, start_movern = 0.1, delta_movern = 0.1, only_use_mainstem_as_reference = True,calculate_MLE_collinearity = False,
+                              collinearity_MLE_sigma = 1000, print_profiles_fxn_movern_csv = False, calculate_MLE_collinearity_with_points = False, 
+                              calculate_MLE_collinearity_with_points_MC = False, MC_point_fractions = 5, MC_point_iterations = 1000,
+                              max_MC_point_fraction = 0.5, movern_residuals_test = False, MCMC_movern_analysis = False, 
+                              MCMC_movern_minimum = 0.05, MCMC_movern_maximum = 1.5, MCMC_chain_links = 5000, estimate_best_fit_movern = True,
+                              SA_vertical_interval = 20,log_A_bin_width = 0.1,print_slope_area_data = False, segment_slope_area_data = False, 
+                              slope_area_minimum_segment_length = 3, bootstrap_SA_data =False, N_SA_bootstrap_iterations = 1000,
+                              SA_bootstrap_retain_node_prbability = 0.5,n_iterations = 20,minimum_segment_length = 10, maximum_segment_length = 100000, n_nodes_to_visit = 10, target_nodes = 80,skip = 2, sigma = 20,print_chi_coordinate_raster = False, print_simple_chi_map_to_csv = True, 
+                              print_chi_data_maps = True, print_simple_chi_map_with_basins_to_csv = True,
+                              print_segmented_M_chi_map_to_csv =True, print_source_keys = True, print_sources_to_csv = False, 
+                              print_sources_to_raster =False, print_baselevel_keys = False, use_precipitation_raster_for_chi = False,  
+                              print_discharge_raster = False,print_chi_no_discharge = False,check_chi_maps = False,
+                              precipitation_fname = "NULL", print_segments = False, print_segments_raster = False):
 		"""
-		This function will manipulate the chi_mapping_tool.exe. I reccomend creating intermediate functions to control this massive function for specific purposes ex MuddChi_2014, Mudd_movern_2018, ...
+		This function will manipulate the chi_mapping_tool.exe. I recommend creating intermediate functions to control this 
+        massive function for specific purposes ex MuddChi_2014, Mudd_movern_2018, ...
 
         SMM 26/06/2018: This takes every possible input to a chi mapping tool call and passes these as
-        arguments. The defaults are set the the default values of the chi_mapping_tool
+        arguments. The defaults are set to the default values of the chi mapping tool
+        See https://lsdtopotools.github.io/LSDTT_documentation/LSDTT_chi_analysis.html for documentation
 
 		"""
 		# writing the file
@@ -185,7 +200,7 @@ only_take_largest_basin = False, BaselevelJunctions_file = "NULL", extend_channe
 		param_name = self.wpath+self.wprefix+"_Chiculations.param"
 		file = open(param_name, 'w')
 		file.write('# This is a parameter file for the chi_mapping_tool \n')
-		file.write('# One day there will be documentation. \n')
+		file.write('# Documentation is here: https://lsdtopotools.github.io/LSDTT_documentation/LSDTT_chi_analysis.html \n')
 		file.write(" \n")
 		file.write('# These are parameters for the file i/o \n')
 		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
@@ -444,6 +459,8 @@ def OT_SRTM30_toLSDTT(fpath,fname, UTM_zone, out_full_name, reso = 30, south = F
     This function takes a raster and converts it to one in UTM zone of your choice.
     It also resamples to a resolution of your choice using cubic sampling
     
+    SMM Note: This should work for SRTM90 or any of the other opentopography data. Maybe rename this to be more general?
+    
     Args: 
         fpath (str): The name of the path to which you will save the file
         fname (str): The name of the file (i.e., what you rename the file after downloading)
@@ -533,7 +550,7 @@ def get_SRTM30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
 		# Writing the file
 		file = open(fpath+fname+"_trimming.param", 'w')
 		file.write('# This is a parameter file for the chi_mapping_tool \n')
-		file.write('# One day there will be documentation. \n')
+		file.write('# Documentation is here: https://lsdtopotools.github.io/LSDTT_documentation/LSDTT_chi_analysis.html \n')
 		file.write(" \n")
 		file.write('# These are parameters for the file i/o \n')
 		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
@@ -621,7 +638,7 @@ def get_ALOS30_from_point(fpath, fname, lat = 0, lon = 0, paddy_lat = 0.1, paddy
 		# Writing the file
 		file = open(fpath+fname+"_trimming.param", 'w')
 		file.write('# This is a parameter file for the chi_mapping_tool \n')
-		file.write('# One day there will be documentation. \n')
+		file.write('# Documentation is here: https://lsdtopotools.github.io/LSDTT_documentation/LSDTT_chi_analysis.html \n')
 		file.write(" \n")
 		file.write('# These are parameters for the file i/o \n')
 		file.write("# IMPORTANT: You MUST make the write directory: the code will not work if it doens't exist. \n")
