@@ -21,9 +21,14 @@ sys.path.append(LSDMT_PT)
 sys.path.append(LSDMT_MF)
 sys.path.append(Iguanodon)
 
+import LSDPlottingTools as LSDPT
 from LSDPlottingTools import LSDMap_MOverNPlotting as MN
 from LSDMapFigure import PlottingHelpers as Helper
 import Iguanodon31 as Ig
+
+#setting some variables - manual as they aren't changed often
+
+d_movern = 0.05
 
 #parsing arguments
 parser = argparse.ArgumentParser()
@@ -101,6 +106,7 @@ inputs.use_precipitation_raster_for_chi = int(inputs.use_precipitation_raster_fo
 
 if inputs.use_precipitation_raster_for_chi == 0:
   use_precipitation_raster_for_chi = False
+  precipitation_fname = 'NULL'
 if inputs.use_precipitation_raster_for_chi == 1:
   use_precipitation_raster_for_chi = True
   precipitation_fname = 'precipitation_'+fname
@@ -147,6 +153,10 @@ if geology and not secondary_burn_raster_to_csv:
 if TRMM and not secondary_burn_raster_to_csv: 
   burn_raster_prefix = fname+'_precipitation'
 
+if not TRMM and not secondary_burn_raster_to_csv:
+  burn_raster_prefix = 'NULL'
+  secondary_burn_raster_prefix = 'NULL'
+
 
 parameterWriter("current_path: "+str(current_path))
 parameterWriter("fname: "+str(fname))
@@ -154,29 +164,31 @@ parameterWriter("writing_prefix: "+str(writing_prefix))
 parameterWriter("current_min: "+str(current_min))
 parameterWriter("current_max: "+str(current_max))
 parameterWriter("summary_directory: "+str(summary_directory))
-parameterWriter("print_litho_info: "+str(print_litho_info))
-parameterWriter("burn_raster_to_csv: "+str(burn_raster_to_csv))
-parameterWriter("mergeAllBasins: "+str(mergeAllBasins))
-parameterWriter("junctions: "+str(print_junctions_to_csv))
-parameterWriter("min_elevation: "+str(min_elevation))
-parameterWriter("max_elevation: "+str(max_elevation))
-parameterWriter("plotting: "+str(plotting))
-parameterWriter("geology: "+str(geology))
-parameterWriter("TRMM: "+str(TRMM))
-parameterWriter("use_precipitation_raster_for_chi: "+str(use_precipitation_raster_for_chi))
-parameterWriter("secondary_burn_raster_to_csv: "+str(secondary_burn_raster_to_csv))
-parameterWriter("secondary_burn_raster_prefix: "+str(secondary_burn_raster_prefix))
+try:
+    parameterWriter("print_litho_info: "+str(print_litho_info))
+    parameterWriter("burn_raster_to_csv: "+str(burn_raster_to_csv))
+    parameterWriter("mergeAllBasins: "+str(mergeAllBasins))
+    parameterWriter("junctions: "+str(print_junctions_to_csv))
+    parameterWriter("min_elevation: "+str(min_elevation))
+    parameterWriter("max_elevation: "+str(max_elevation))
+    parameterWriter("plotting: "+str(plotting))
+    parameterWriter("geology: "+str(geology))
+    parameterWriter("TRMM: "+str(TRMM))
+    parameterWriter("use_precipitation_raster_for_chi: "+str(use_precipitation_raster_for_chi))
+    parameterWriter("secondary_burn_raster_to_csv: "+str(secondary_burn_raster_to_csv))
+    parameterWriter("secondary_burn_raster_prefix: "+str(secondary_burn_raster_prefix))
 
 
-parameterWriter("inputs.print_litho_info: "+str(inputs.print_litho_info))
-parameterWriter("inputs.burn_raster_to_csv: "+str(inputs.burn_raster_to_csv))
-parameterWriter("inputs.plotting: "+str(inputs.plotting))
-parameterWriter("inputs.geology: "+str(inputs.geology))
-parameterWriter("inputs.TRMM: "+str(inputs.TRMM))  
-
+    parameterWriter("inputs.print_litho_info: "+str(inputs.print_litho_info))
+    parameterWriter("inputs.burn_raster_to_csv: "+str(inputs.burn_raster_to_csv))
+    parameterWriter("inputs.plotting: "+str(inputs.plotting))
+    parameterWriter("inputs.geology: "+str(inputs.geology))
+    parameterWriter("inputs.TRMM: "+str(inputs.TRMM))  
+except:
+    print("one of the optional parameters does not exist")
 
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
-Ig.Iguanodon31.movern_calculation(chi, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, print_simple_chi_map_with_basins_to_csv =False,
+Ig.Iguanodon31.movern_calculation(chi, print_litho_info, litho_raster, print_junctions_to_csv, n_movern=9, start_movern=0.1, delta_movern=0.1, m_over_n = 0.45, print_simple_chi_map_with_basins_to_csv =False,
  print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, print_basin_raster = True, minimum_basin_size_pixels = current_min, maximum_basin_size_pixels = current_max,
   threshold_contributing_pixels = 1000, only_take_largest_basin = False, write_hillshade = True, plot = False, minimum_elevation = min_elevation, maximum_elevation = max_elevation,
   use_precipitation_raster_for_chi=use_precipitation_raster_for_chi,precipitation_fname = precipitation_fname,burn_raster_to_csv = burn_raster_to_csv, 
@@ -240,7 +252,7 @@ if plotting:
 
   #getting MonteCarlo M/N data for this directory
   BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
-  PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+  PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=d_movern,n_movern=9)
 
   #merging MonteCarlo M/N data by basin_key
   new_df = new_df.merge(PointsDF, on='basin_key')
@@ -319,24 +331,34 @@ if mergeAllBasins:
 # Must have burn_to_csv flag as true!
 #=============================================================================
 
-if burn_raster_to_csv:
+#introducing this variable as the remainder of the code doesn't appear to be important, but unsure.
+do_burn_raster_to_csv = False
+
+if do_burn_raster_to_csv:
     #adding burned csv data to mchi_segmented. CAUTION!!!  rounding lat long to 4 d.p.
-  if geology == 1 or TRMM == 1:
     
-    with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as chi:
-      pandasChi = pd.read_csv(chi, delimiter = ',')
-      burned_data = pandasChi[["burned_data","latitude","longitude"]]
-      burned_data[["latitude","longitude"]] = burned_data[["latitude","longitude"]].round(4)
-      #print burned_data  
-      with open(current_path+writing_prefix+'_MChiSegmented.csv','r') as mchi:
-        pandasMChi = pd.read_csv(mchi, delimiter = ',')
-        pandasMChi[["latitude","longitude"]] = pandasMChi[["latitude","longitude"]].round(4)
-        burned_data = burned_data.merge(pandasMChi,on=["latitude","longitude"])
-        #print pandasMChi
-        #print burned_data
-        burned_data.to_csv(current_path+writing_prefix+'_MChiSegmented_burn.csv', mode = "w", header = True, index = False)  
     
-    shutil.copy(current_path+writing_prefix+'_MChiSegmented_burn.csv', summary_directory+writing_prefix+'_MChiSegmented_burn.csv')
+    ### section has been deprecated by moving this process to the chi_mapping_tool ###  
+  
+  #if geology == 1 or TRMM == 1:
+        
+    #with open(current_path+writing_prefix+'_chi_data_map_burned.csv','r') as chi:
+    #  pandasChi = pd.read_csv(chi, delimiter = ',')
+    #  if geology and TRMM:
+    #    burned_data = pandasChi[["burned_data","secondary_burned_data","latitude","longitude"]]
+    #  else:
+    #    burned_data = pandasChi[["burned_data","latitude","longitude"]]
+    #  burned_data[["latitude","longitude"]] = burned_data[["latitude","longitude"]].round(4)
+    #  #print burned_data  
+    #  with open(current_path+writing_prefix+'_MChiSegmented.csv','r') as mchi:
+    #    pandasMChi = pd.read_csv(mchi, delimiter = ',')
+    #    pandasMChi[["latitude","longitude"]] = pandasMChi[["latitude","longitude"]].round(4)
+    #    burned_data = burned_data.merge(pandasMChi,on=["latitude","longitude"])
+    #    #print pandasMChi
+    #    #print burned_data
+    #    burned_data.to_csv(current_path+writing_prefix+'_MChiSegmented_burn.csv', mode = "w", header = True, index = False)  
+    
+    #shutil.copy(current_path+writing_prefix+'_MChiSegmented_burn.csv', summary_directory+writing_prefix+'_MChiSegmented_burn.csv')
   
   
   
@@ -360,7 +382,10 @@ if burn_raster_to_csv:
           basin_number = int(row[5])
           selected_DF = pandasDF.loc[pandasDF['basin_key'] == basin_number]
           #getting burned data series for the basin
-          pandas_list = selected_DF['burned_data']
+          if not geology:
+            pandas_list = selected_DF['burned_data']
+          if geology:
+            pandas_list = selected_DF['secondary_burned_data']
           #print pandas_list
           mean_rainfall = pandas_list.mean()
       
@@ -370,7 +395,7 @@ if burn_raster_to_csv:
     
     with open(current_path+writing_prefix+'_basin_TRMM.csv','r') as file:
       BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
-      PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+      PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=d_movern,n_movern=9)
       pandasDF = pd.read_csv(file, delimiter = ',')
       pandasDF = pandasDF.merge(PointsDF, on='basin_key')
       pandasDF.to_csv(current_path+writing_prefix+'_basin_TRMM_MN.csv', mode="w",header=True,index=False)
@@ -522,7 +547,7 @@ if burn_raster_to_csv:
   if geology == 1:
     with open(current_path+writing_prefix+'_litho_elevation.csv','r') as file:
       BasinDF = Helper.ReadMCPointsCSV(current_path,writing_prefix)
-      PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=0.1,n_movern=9)
+      PointsDF = MN.GetMOverNRangeMCPoints(BasinDF,start_movern=0.1,d_movern=d_movern,n_movern=9)
       pandasDF = pd.read_csv(file, delimiter = ',')
       pandasDF = pandasDF.merge(PointsDF, on='basin_key')
       pandasDF.to_csv(current_path+writing_prefix+'_litho_elevation_MN.csv', mode="w",header=True,index=False)
