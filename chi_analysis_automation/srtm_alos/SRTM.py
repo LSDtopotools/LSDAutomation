@@ -43,13 +43,15 @@ class SRTM:
     #rounds lat and long to 2 decimal places to make file naming neater
     lat_2dp = "%.2f" %float(self.lat)
     lon_2dp = "%.2f" %float(self.lon)
+    lat_2dp = lat_2dp.replace('.','_')
+    lon_2dp = lon_2dp.replace('.','_')
     self.path = self.static_path+str(lat_2dp)+'_'+str(lon_2dp)+'_'+self.fname+'/'
     
     #directing to single directory for use of -PARALLEL in visualisation
     #self.path = self.static_path+name
     if not os.path.exists(self.path):
-      os.mkdir(self.path, 0777)
-
+      os.makedirs(self.path)
+    print("made directory")
  
   def parameterWriter (self, input):
     
@@ -90,6 +92,7 @@ class SRTM:
     #geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system
     #using a modified version of glim dataset to handle all three levels of classification
     geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya_full_key.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system    
+    #geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/geology_lat_lon.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system
     geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
     ds = gdal.Open(self.summary_directory+self.fname+'.bil')
     #getting target srs from current DEM
@@ -101,10 +104,10 @@ class SRTM:
     #transform crs and rasterize
     os.system('ogr2ogr -t_srs'+" '"+ds+"' "+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'.shp')
     if SRTM90:
-      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')
       os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 90 90 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')      
     else:
-      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_LITHRAST'+'.bil')
+      #os.system('gdal_rasterize -of ENVI -a glim_key_I -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')
       os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata 0 -tr 30 30 -l '+self.fname+'_utm'+' '+self.summary_directory+self.fname+'_utm'+'.shp '+self.summary_directory+self.fname+'_geology'+'.bil')
   
   
@@ -179,7 +182,25 @@ class SRTM:
       os.system(res_30) 
       print res_30       
         #forcing precipitation raster extents to dem extents
+  
+  def simpleChiAnalysis (self, min_basin = 10000, interval_basin = 10000, min_elevation=0, max_elevation=30000, start_m_n = 0.1, delta_m_n = 0.05, total_iterations = 18):  
+    current_max = int(min_basin) + (int(interval_basin)/2)
+    current_path = self.path+'/'+str(min_basin)+'/'
+    writing_prefix = str(self.tile)+str(min_basin)+"_"+str(current_max)
+  
+    #os.mkdir(current_path,0777) FOR purposes of parallel visualisation the directories can only be made once 
+    if not os.path.exists(current_path):
+      os.makedirs(current_path)
     
+    shutil.copy2(self.summary_directory+self.fname+'.bil', current_path)
+    shutil.copy2(self.summary_directory+self.fname+'.hdr', current_path)
+    
+    #calling driver#  
+    chi_plotMoverN_driver = "nohup nice python simple_chi_driver.py %s %s %s %s %s %s %s %s %s %s %s &" %(current_path,
+                            self.fname,writing_prefix,min_basin,current_max,self.summary_directory, min_elevation, max_elevation, start_m_n, delta_m_n, total_iterations)
+    
+    sub.call(chi_plotMoverN_driver, shell = True)  
+  
   def chiAnalysis (self, chi_stats_only=False, print_litho_info=0, burn_raster_to_csv=0, geology=0, TRMM=0, n_movern = 9, start_movern = 0.1, delta_movern = 0.1, min_basin = 10000, interval_basin = 10000, contributing_pixels = 1000, iterations = 1, min_elevation=0, max_elevation=30000, plotting = 0, use_precipitation_raster_for_chi = 0):
     
     #if chi_stats_only:  
@@ -201,7 +222,7 @@ class SRTM:
     
     for x_i in range (0,int(iterations)):
       print('NOT CHI STATS ONLY')
-      current_min = int(min_basin) + (int(interval_basin)*x_i)
+      current_min = int(min_basin) + (int(interval_basin)*x_i) #note from debug, x_i is 0 here
       current_max = int(current_min) + (int(interval_basin)/2) #division added to create gap between iterations
       current_path = self.path+'/'+str(current_min)+'/'
       writing_prefix = str(self.tile)+str(current_min)+"_"+str(current_max)
