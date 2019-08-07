@@ -428,6 +428,14 @@ class Iguanodon31:
 		if (plot):
 			plotting_command = "python %sPlotKnickpointAnalysis.py -dir %s -fname %s -ALL True" %(self.LSDMT_path,self.wpath,self.wprefix)
 			sub.call(plotting_command, shell = True)
+	
+  def mchi_only(self,minimum_basin_size_pixels = 10000, maximum_basin_size_pixels = 90000000, m_over_n = 0.45, threshold_contributing_pixels = 5000, minimum_elevation = 0, maximum_elevation= 30000,burn_raster_to_csv=False, burn_raster_prefix="NULL",secondary_burn_raster_to_csv=False,secondary_burn_raster_prefix="Null"):
+		
+		"""
+			Needed to recalculate mchi_segmented csvs for investigation of ksn values.
+			Author: Calum Bradbury 03/07/2018
+		"""
+		self.chi_mapping_tool_full(burn_raster_to_csv=burn_raster_to_csv,burn_raster_prefix=burn_raster_prefix,secondary_burn_raster_to_csv=secondary_burn_raster_to_csv,secondary_burn_raster_prefix=secondary_burn_raster_prefix, tertiary_burn_raster_to_csv=True,tertiary_burn_raster_prefix=self.rprefix+'_to_burn', minimum_elevation = minimum_elevation, maximum_elevation= maximum_elevation,minimum_basin_size_pixels = minimum_basin_size_pixels,maximum_basin_size_pixels = maximum_basin_size_pixels, m_over_n =m_over_n,threshold_contributing_pixels = threshold_contributing_pixels, print_basin_raster = False,write_hillshade = False,estimate_best_fit_movern=False, print_simple_chi_map_to_csv = False,print_chi_data_maps = False, print_simple_chi_map_with_basins_to_csv = False,print_source_keys = False)
 
 ###### end of the class
 
