@@ -58,7 +58,7 @@ total_iterations = inputs.total_iterations
 #ensuring correct variable type
 start_m_n = float(start_m_n)
 delta_m_n = float(delta_m_n)
-total_iterations = int(total_iterations)
+total_iterations = float(total_iterations)
 
 def parameterWriter(parameter):
   fname_to_write = current_path+fname+"_input_chi_plotMoverN_driver.param"
@@ -81,14 +81,16 @@ parameterWriter("max_elevation: "+str(max_elevation))
 chi = Ig.Iguanodon31(current_path, fname, writing_path = current_path, writing_prefix = writing_prefix, 
                      data_source = 'ready', preprocessing_raster = False, UTM_zone = '', south = False)
                      
-Ig.Iguanodon31.movern_calculation(chi, n_movern=total_iterations, start_movern=start_m_n, delta_movern=delta_m_n, m_over_n = 0.45, 
+#initial m_n doesn't really matter. Removing variable.
+Ig.Iguanodon31.movern_calculation(chi,print_litho_info=False, litho_raster='Null', print_junctions_to_csv=True,
+                                  n_movern=total_iterations, start_movern=start_m_n, delta_movern=delta_m_n,
                                   print_simple_chi_map_with_basins_to_csv =False,
                                   print_segmented_M_chi_map_to_csv =True, print_chi_data_maps = False, 
                                   print_basin_raster = True, minimum_basin_size_pixels = current_min, 
                                   maximum_basin_size_pixels = current_max, threshold_contributing_pixels = 1000,
                                   only_take_largest_basin = False, write_hillshade = True, plot = False, 
                                   minimum_elevation = min_elevation, maximum_elevation = max_elevation)
-                                                                  
+                                                                
 def renameOutputs(in_name,out_name):
   try:
     shutil.move(current_path+writing_prefix+in_name+'.csv',current_path+writing_prefix+out_name+'.csv')  

@@ -331,7 +331,7 @@ def mainAnalysis(full_target,summary_directory,write_name,fname,raster_source,he
 #opening processed source file to access directory structure
 
 name_list = ['himalaya_processed','himalaya_b_processed','himalaya_c_processed']
-#name_list = ['himalaya_b_processed_test','himalaya_c_processed']
+#name_list = ['himalaya_b_processed']
 for name in name_list:
 
     with open(directory+name+'.csv','r') as csvfile:

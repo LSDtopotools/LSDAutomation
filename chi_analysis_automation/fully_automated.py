@@ -14,6 +14,7 @@ import csv
 from srtm_alos import SRTM
 import os
 import argparse
+import sys
 
 #=============================================================================
 # Welcome screen if no arguments.
@@ -30,17 +31,19 @@ def print_welcome():
 ##  User Variables ##
 #====================
 
-delta_m_n = 0.05
+delta_m_n = 0.1
 start_m_n = 0.1
-path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/0_05_5000m/'
+#write path. Input csv must be in this directory.
+path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/0_1_5000m/'
 
 #====================
 ## /User Variables ##
 #====================
+total_iterations = (1.0-start_m_n)/delta_m_n
 
-total_iterations = 1/delta_m_n
-#must be integer
-total_iterations = int(total_iterations)
+total_iterations = float(total_iterations)
+
+print delta_m_n,start_m_n,total_iterations
 
 
 
@@ -101,8 +104,7 @@ SRTM90 = inputs.SRTM90
 #Decimal degrees, controls size of tiles.
 paddy_long = 0.25
 
-#write path. Input csv must be in this directory.
-path = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/0_05_5000m/' 
+
 
 #write name.
 write = str(csv_name)+'_processed'
