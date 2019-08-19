@@ -19,7 +19,23 @@ import glob
 
 delta_m_n = 0.1
 start_m_n = 0.1
-directory = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/0_1_5000m/'
+directory = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/Andes/'
+
+#geographic zone
+andes = True
+himalaya = False
+
+#raster selector
+geology = True
+TRMM = True
+exhumation = False
+glaciated = False
+cosmo = False
+distance = False
+distance_from = False
+distance_along = False
+strain = True
+tectonics = False
 
 ## /User Variables ##
 #####################
@@ -28,13 +44,11 @@ total_iterations = (1.0-start_m_n)/delta_m_n
 #must be integer
 total_iterations = float(total_iterations)
 
-
-                                
 iteration_counter = 0
 
 #plan: use processed csv to rasterize a new source raster, and run the raster burner hack of the chi_mapping_tool
 
-
+### Data Sources ###
 data_source_trmm = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/annual.tif'
 data_source_exhumation = '/exports/csce/datastore/geos/users/s1134744/exhumation/0_2.tif'
 data_source_glaciated = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/glims_ice/ice_100.bil'
@@ -42,19 +56,13 @@ data_source_cosmo = '/exports/csce/datastore/geos/groups/LSDTopoData/Himalayan_K
 data_source_distance = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/simplified_distance.tif'
 data_source_distance_from = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/distance_km.tif'
 data_source_distance_along = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/euc_allocation_6.tif'
-data_source_strain = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/second_invariant.tif'
-
-geology = True
-TRMM = True
-exhumation = True
-glaciated = True
-cosmo = True
-distance = False
-distance_from = True
-distance_along = True
-strain = True
-
+data_source_strain_himalaya = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/second_invariant.tif'
+data_source_strain_andes = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/andes_strain.bil
 data_source_tectonics = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/fault_zones/digitized.bil'#source of digitized shapefile
+data_source_GLiM_Himalaya = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya_full_key.shp'
+data_soure_GLiM_Andes = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/Andes/andes_glim_full.shp'
+data_source_glims_glacier = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/glims_ice/clipped_exists.shp'
+### /Data Sources ###
 
 def utmExtents(summary_directory,fname,corner):
   if not os.path.exists(summary_directory+fname+corner+".txt"):
@@ -90,10 +98,7 @@ def getGlaciers(full_directory,summary_directory,fname,write_name,SRTM90=False):
   #these are in UTM, needs to be lat lon
   LL = utmExtents(summary_directory,fname,corner="_lower_left")
   UR = utmExtents(summary_directory,fname,corner="_upper_right")   
-
-  simplified_geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/fault_zones/digitized.shp' #source of digitized shapefile  
-  glaciers = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/glims_ice/clipped_exists.shp'
-
+ 
   ds = gdal.Open(summary_directory+fname+'.bil')
   #getting target srs from current DEM
   ds = ds.GetProjection()
@@ -108,11 +113,12 @@ def getGlaciers(full_directory,summary_directory,fname,write_name,SRTM90=False):
       
   #clipping                   
   try:
-    print('ogr2ogr -f "ESRI Shapefile" %s.shp %s -clipsrc %s %s %s %s' %(summary_directory+fname+'_glaciers',glaciers,LL_lat_lon[0],LL_lat_lon[1],UR_lat_lon[0],UR_lat_lon[1]))                                                     
+    print('ogr2ogr -f "ESRI Shapefile" %s.shp %s -clipsrc %s %s %s %s' %(summary_directory+fname+'_glaciers',data_source_glims_glacier,LL_lat_lon[0],LL_lat_lon[1],UR_lat_lon[0],UR_lat_lon[1]))                                                     
     sys.exit()
   except:
     sys.exit()
-  os.system(('ogr2ogr -f "ESRI Shapefile" %s.shp %s -clipsrc %s %s %s %s') %(summary_directory+fname+'_glaciers',glaciers,LL_lat_lon[0],LL_lat_lon[1],UR_lat_lon[0],UR_lat_lon[1]))
+  os.system(('ogr2ogr -f "ESRI Shapefile" %s.shp %s -clipsrc %s %s %s %s') %(summary_directory+fname+'_glaciers',data_source_glims_glacier,LL_lat_lon[0],LL_lat_lon[1],UR_lat_lon[0],UR_lat_lon[1]))
+  
   #transform crs and rasterize
   os.system('ogr2ogr -t_srs'+" '"+ds+"' "+summary_directory+fname+'_glaciers_utm'+'.shp '+summary_directory+fname+'_glaciers.shp')
   
@@ -147,10 +153,9 @@ def getGeologyRaster(full_directory,summary_directory,fname,lat,lon,SRTM90=False
     xmax=lon+paddy
     ymax=lat+paddy
     
-    geology = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya_full_key.shp' #source of the glim shapefile clipped to cover the himalaya and in geographic coordinate system    
     geology_key = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/glim_lithokey.csv'
-    glaciers = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/glims_ice/clipped_exists.shp'
     
+    print(summary_directory+fname+'.bil')
     ds = gdal.Open(summary_directory+fname+'.bil')
     #getting target srs from current DEM
     ds = ds.GetProjection()
@@ -158,10 +163,18 @@ def getGeologyRaster(full_directory,summary_directory,fname,lat,lon,SRTM90=False
     ds = ds.ExportToProj4()
    
     if not glaciation:
-        shapefile_target = geology
+        #shapefile_target = geology
+        #for Andes
+        if andes:
+            shapefile_target = data_soure_GLiM_Andes
+            shapefile_attribute = 'glim_litho'
+        if himalaya:
+            shapefile_target = data_soure_GLiM_Himalaya
+            shapefile_attribute = 'litho_keys'
         
     if glaciation:
-        shapefile_target = glaciers
+        shapefile_target = data_source_glims_glacier
+        shapefile_attribute = 'exists'
     
     #removing shapefiles  
     try:
@@ -191,17 +204,10 @@ def getGeologyRaster(full_directory,summary_directory,fname,lat,lon,SRTM90=False
     os.system(transform_command)
     
     #rasterising    
-    if not glaciation:
-        if SRTM90:
-            os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata -9999 -tr 90 90 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')      
-        else:
-            os.system('gdal_rasterize -of ENVI -a litho_keys -a_nodata -9999 -tr 30 30 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')
-
-    if glaciation:
-        if SRTM90:
-            os.system('gdal_rasterize -of ENVI -a exists -a_nodata -9999 -tr 90 90 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')            
-        else:
-            os.system('gdal_rasterize -of ENVI -a exists -a_nodata -9999 -tr 30 30 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')
+    if SRTM90:
+        os.system('gdal_rasterize -of ENVI -a '+shapefile_attribute+' -a_nodata -9999 -tr 90 90 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')      
+    else:
+        os.system('gdal_rasterize -of ENVI -a '+shapefile_attribute+' -a_nodata -9999 -tr 30 30 -l '+fname+raster_name+'_utm'+' '+summary_directory+fname+raster_name+'_utm'+'.shp '+full_directory+fname+'_'+raster_name+'.bil')
 
 def getRaster(full_directory,summary_directory,write_name,fname,raster_source,raster_name='to_burn',SRTM90=False): 
   LL = utmExtents(summary_directory,fname,corner="_lower_left")
@@ -320,6 +326,7 @@ def mainAnalysis(full_target,summary_directory,write_name,fname,raster_source,he
     try:
         os.remove(full_target+fname+'_'+header+'.bil')
         os.remove(full_target+fname+'_'+header+'.hdr')
+        #print("raster removal turned off")
     except:
         print("failed removing rasters after analyses")
 
@@ -330,8 +337,12 @@ def mainAnalysis(full_target,summary_directory,write_name,fname,raster_source,he
 
 #opening processed source file to access directory structure
 
-name_list = ['himalaya_processed','himalaya_b_processed','himalaya_c_processed']
-#name_list = ['himalaya_b_processed']
+if himalaya:
+    name_list = ['himalaya_processed','himalaya_b_processed','himalaya_c_processed']
+
+if andes:
+    name_list = ['Andes_test_processed']
+
 for name in name_list:
 
     with open(directory+name+'.csv','r') as csvfile:
@@ -414,3 +425,7 @@ for name in name_list:
             if strain: 
                 mainAnalysis(full_target, summary_target, write_name, fname,
                              raster_source = data_source_strain, lat = lat, lon = lon, header = 'Strain_10^-9_year^-1')                             
+
+            if tectonics: 
+                mainAnalysis(full_target, summary_target, write_name, fname,
+                             raster_source = data_source_tectonics, lat = lat, lon = lon, header = 'Tectonic_Zone')                                                          
