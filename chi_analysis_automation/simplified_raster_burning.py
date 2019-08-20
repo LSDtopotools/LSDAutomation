@@ -57,7 +57,7 @@ data_source_distance = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools
 data_source_distance_from = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/distance_km.tif'
 data_source_distance_along = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/euc_allocation_6.tif'
 data_source_strain_himalaya = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/second_invariant.tif'
-data_source_strain_andes = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/andes_strain.bil
+data_source_strain_andes = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/strain/andes_strain.bil'
 data_source_tectonics = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/fault_zones/digitized.bil'#source of digitized shapefile
 data_source_GLiM_Himalaya = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/himalaya/himalaya_full_key.shp'
 data_soure_GLiM_Andes = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/GLIM/Andes/andes_glim_full.shp'
@@ -423,6 +423,10 @@ for name in name_list:
                              raster_source = data_source_distance_along, lat = lat, lon = lon, header = 'Distance_Along_KM')
                                          
             if strain: 
+                if andes:
+                    data_source_strain = data_source_strain_andes
+                if himalaya:
+                    data_source_strain = data_source_strain_himalaya
                 mainAnalysis(full_target, summary_target, write_name, fname,
                              raster_source = data_source_strain, lat = lat, lon = lon, header = 'Strain_10^-9_year^-1')                             
 
