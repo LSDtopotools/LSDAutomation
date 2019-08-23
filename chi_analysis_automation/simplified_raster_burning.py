@@ -30,7 +30,7 @@ geology = True
 TRMM = True
 exhumation = False
 glaciated = False
-cosmo = False
+cosmo = True
 distance = False
 distance_from = False
 distance_along = False
@@ -52,7 +52,8 @@ iteration_counter = 0
 data_source_trmm = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/TRMM_data/annual.tif'
 data_source_exhumation = '/exports/csce/datastore/geos/users/s1134744/exhumation/0_2.tif'
 data_source_glaciated = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/glims_ice/ice_100.bil'
-data_source_cosmo = '/exports/csce/datastore/geos/groups/LSDTopoData/Himalayan_Ksn_Concavity/cosmo_data/basin_shapefiles/outputDS.tif'
+data_source_cosmo_Himalaya = '/exports/csce/datastore/geos/groups/LSDTopoData/Himalayan_Ksn_Concavity/cosmo_data/basin_shapefiles/outputDS.tif'
+data_source_cosmo_Andes = '/exports/csce/datastore/geos/groups/LSDTopoData/Himalayan_Ksn_Concavity/cosmo_data/Andes_cosmo/outputDS.tif'
 data_source_distance = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/simplified_distance.tif'
 data_source_distance_from = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/distance_km.tif'
 data_source_distance_along = '/exports/csce/datastore/geos/users/s1134744/LSDTopoTools/Topographic_projects/shapefiles/euc_allocation_6.tif'
@@ -324,9 +325,9 @@ def mainAnalysis(full_target,summary_directory,write_name,fname,raster_source,he
         except:
             print("error fixing rename")
     try:
-        os.remove(full_target+fname+'_'+header+'.bil')
-        os.remove(full_target+fname+'_'+header+'.hdr')
-        #print("raster removal turned off")
+        #os.remove(full_target+fname+'_'+header+'.bil')
+        #os.remove(full_target+fname+'_'+header+'.hdr')
+        print("raster removal turned off")
     except:
         print("failed removing rasters after analyses")
 
@@ -407,6 +408,10 @@ for name in name_list:
                              raster_source = data_source_glaciated, lat = lat, lon = lon, header = 'Glaciated',geology_required = False,glaciation=False)
                                          
             if cosmo:
+                if andes:
+                    data_source_cosmo = data_source_cosmo_Andes
+                if himalaya:
+                    data_source_cosmo = data_source_cosmo_Himalaya
                 mainAnalysis(full_target, summary_target, write_name, fname,
                              raster_source = data_source_cosmo, lat = lat, lon = lon, header = 'Cosmo_EBE_mm_kyr')
                                          
